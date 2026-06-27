@@ -1,0 +1,129 @@
+// MNEMOSYNE AI — Digital Memory Layer
+// Prisma schema (SQLite). The data model is provider-agnostic and can be
+// swapped to Neon/Postgres by changing the datasource provider + url.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A preserved person / "digital memory" (e.g. Dr. Aryan)
+model Profile {
+  id          String   @id @default(cuid())
+  name        String
+  title       String
+  field       String
+  bio         String
+  birthYear   Int?
+  deathYear   Int?
+  avatarColor String   @default("amber")
+  accent      String   @default("emerald")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents      Document[]
+  memories       Memory[]
+  graphNodes     GraphNode[]
+  graphEdges     GraphEdge[]
+  timelineEvents TimelineEvent[]
+  conversations  Conversation[]
+  thinkingStyle  ThinkingStyle?
+}
+
+/// Uploaded source material (PDF text, notes, markdown, transcripts...)
+model Document {
+  id         String   @id @default(cuid())
+  profileId  String
+  title      String
+  sourceType String   // pdf | txt | md | audio | note
+  content    String
+  charCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  memories Memory[]
+}
+
+/// A single extracted unit of knowledge / reasoning
+model Memory {
+  id         String   @id @default(cuid())
+  profileId  String
+  documentId String?
+  type       String   // fact | decision | discovery | failure | concept | experiment | quote | principle
+  title      String
+  content    String
+  year       Int?
+  keywords   String   @default("") // comma-separated, used for lightweight retrieval
+  createdAt  DateTime @default(now())
+
+  profile   Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  document  Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+}
+
+model GraphNode {
+  id        String @id @default(cuid())
+  profileId String
+  label     String
+  type      String // person | research | discovery | decision | experiment | impact | field | method
+  memoryId  String?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model GraphEdge {
+  id           String @id @default(cuid())
+  profileId    String
+  source       String
+  target       String
+  relationship String // led_to | part_of | caused | rejected | discovered | used | influenced
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  profileId   String
+  year        Int
+  title       String
+  description String
+  type        String   // experiment | discovery | publication | decision | failure | milestone
+  memoryId    String?
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+/// Learned cognitive fingerprint of the person
+model ThinkingStyle {
+  id              String  @id @default(cuid())
+  profileId       String  @unique
+  writingStyle    String
+  problemSolving  String
+  preferences     String
+  summary         String
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  profileId String
+  createdAt DateTime @default(now())
+
+  profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  messages Message[]
+}
+
+model Message {
+  id              String   @id @default(cuid())
+  conversationId  String
+  role            String   // user | assistant
+  content         String
+  sources         String   @default("") // comma-separated memory ids used for the answer
+  createdAt       DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
