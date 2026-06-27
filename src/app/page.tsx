@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { SiteHeader } from '@/components/mnemosyne/site-header'
 import { SiteFooter } from '@/components/mnemosyne/site-footer'
 import { MobileNav } from '@/components/mnemosyne/mobile-nav'
@@ -24,28 +25,61 @@ export default function Home() {
 
   // scroll to top on view change
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: 'auto' })
   }, [view, selectedProfileId])
 
   // splash + login are full-screen (no header/footer/nav)
   if (view === 'splash') {
-    return <SplashScreen />
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="splash"
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <SplashScreen />
+        </motion.div>
+      </AnimatePresence>
+    )
   }
   if (view === 'login') {
-    return <LoginView />
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="login"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.35 }}
+        >
+          <LoginView />
+        </motion.div>
+      </AnimatePresence>
+    )
   }
 
+  // app shell with app-like page transitions (fade + subtle slide)
   return (
     <>
       <SiteHeader />
-      <main className="flex-1">
-        {view === 'home' && <Landing />}
-        {view === 'memories' && <ProfilesView />}
-        {view === 'history' && <HistoryView />}
-        {view === 'settings' && <SettingsView />}
-        {view === 'profile' && selectedProfileId && (
-          <ProfileDetail key={selectedProfileId} profileId={selectedProfileId} />
-        )}
+      <main className="flex-1 pb-16 md:pb-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={view === 'profile' ? `profile-${selectedProfileId}` : view}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
+          >
+            {view === 'home' && <Landing />}
+            {view === 'memories' && <ProfilesView />}
+            {view === 'history' && <HistoryView />}
+            {view === 'settings' && <SettingsView />}
+            {view === 'profile' && selectedProfileId && (
+              <ProfileDetail profileId={selectedProfileId} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
       <SiteFooter />
       <MobileNav />

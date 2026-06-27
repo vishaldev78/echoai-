@@ -2,25 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Brain, Plus, Sparkles, Trash2, MessagesSquare, Network, FileText, Clock, ArrowRight, Loader2 } from 'lucide-react'
+import { Brain, Plus, Sparkles, Trash2, MessagesSquare, Network, FileText, Clock, ArrowRight, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+} from '@/components/ui/drawer'
 import { api, type Profile } from '@/lib/api'
 import { useApp } from '@/lib/store'
 import { useI18n } from '@/lib/i18n'
 import { toast } from 'sonner'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 
 export function ProfilesView() {
   const { openProfile } = useApp()
@@ -28,6 +26,7 @@ export function ProfilesView() {
   const [profiles, setProfiles] = useState<Profile[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [toDelete, setToDelete] = useState<Profile | null>(null)
+  const [creating, setCreating] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -69,35 +68,39 @@ export function ProfilesView() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t('profiles.title')}</h1>
-          <p className="mt-2 text-muted-foreground">{t('profiles.subtitle')}</p>
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
+      {/* header — compact on mobile */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t('profiles.title')}</h1>
+          <p className="mt-1 hidden text-sm text-muted-foreground sm:block">{t('profiles.subtitle')}</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={seedDemo} className="gap-2">
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" onClick={seedDemo} className="press gap-2">
             <Sparkles className="h-4 w-4 text-amber-500" />
-            {t('profiles.loadDemo')}
+            <span className="hidden sm:inline">{t('profiles.loadDemo')}</span>
           </Button>
-          <CreateButton onCreated={(p) => openProfile(p.id, 'overview')} />
+          <Button onClick={() => setCreating(true)} className="press gap-2">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('profiles.create')}</span>
+          </Button>
         </div>
       </div>
 
       {loading ? (
-        <div className="mt-16 flex items-center justify-center text-muted-foreground">
+        <div className="mt-20 flex items-center justify-center text-muted-foreground">
           <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t('profiles.loading')}
         </div>
       ) : !profiles || profiles.length === 0 ? (
-        <EmptyState onSeed={seedDemo} />
+        <EmptyState onSeed={seedDemo} onCreate={() => setCreating(true)} />
       ) : (
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:mt-8 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
           {profiles.map((p, i) => (
             <motion.div
               key={p.id}
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.05 }}
+              transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.3) }}
             >
               <ProfileCard
                 profile={p}
@@ -109,25 +112,54 @@ export function ProfilesView() {
         </div>
       )}
 
-      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('profiles.delete.title')}</AlertDialogTitle>
-            <AlertDialogDescription>
+      {/* mobile FAB */}
+      {!loading && profiles && profiles.length > 0 && (
+        <button
+          onClick={() => setCreating(true)}
+          className="press fixed bottom-20 right-4 z-30 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-amber-950 shadow-lg shadow-amber-500/30 md:hidden"
+          aria-label={t('profiles.create')}
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
+
+      {/* create-profile bottom sheet */}
+      <CreateProfileSheet
+        open={creating}
+        onOpenChange={setCreating}
+        onCreated={(p) => {
+          setCreating(false)
+          openProfile(p.id, 'overview')
+        }}
+      />
+
+      {/* delete-confirm bottom sheet */}
+      <Drawer open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
+        <DrawerContent className="mx-auto max-w-md">
+          <DrawerHeader className="text-center">
+            <DrawerTitle className="text-lg">{t('profiles.delete.title')}</DrawerTitle>
+            <DrawerDescription>
               {t('profiles.delete.body', { name: toDelete?.name ?? '' })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('profiles.delete.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-rose-600 text-white hover:bg-rose-700"
+            </DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter className="flex-row gap-3 pb-safe">
+            <Button
+              variant="outline"
+              className="press h-12 flex-1"
+              onClick={() => setToDelete(null)}
             >
+              {t('profiles.delete.cancel')}
+            </Button>
+            <Button
+              className="press h-12 flex-1 gap-2 bg-rose-600 text-white hover:bg-rose-700"
+              onClick={confirmDelete}
+            >
+              <Trash2 className="h-4 w-4" />
               {t('profiles.delete.confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   )
 }
@@ -150,11 +182,11 @@ function ProfileCard({
     .toUpperCase()
   const counts = profile._count
   return (
-    <Card className="group relative flex h-full flex-col overflow-hidden border-border/60 transition-all hover:border-amber-500/40 hover:shadow-lg hover:shadow-amber-500/5">
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500/60 to-emerald-500/60 opacity-0 transition-opacity group-hover:opacity-100" />
-      <CardContent className="flex flex-1 flex-col p-6">
+    <Card className="press-card group relative flex h-full flex-col overflow-hidden border-border/60 transition-colors hover:border-amber-500/40">
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-amber-500/60 to-emerald-500/60" />
+      <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <Avatar className="h-12 w-12 ring-2 ring-amber-500/20">
+          <Avatar className="h-11 w-11 shrink-0 ring-2 ring-amber-500/20">
             <AvatarFallback className="bg-gradient-to-br from-amber-500/20 to-emerald-500/20 font-semibold text-amber-600 dark:text-amber-300">
               {initials}
             </AvatarFallback>
@@ -165,18 +197,18 @@ function ProfileCard({
           </div>
           <button
             onClick={onDelete}
-            className="rounded-md p-1.5 text-muted-foreground/50 opacity-0 transition-all hover:bg-rose-500/10 hover:text-rose-500 group-hover:opacity-100"
+            className="press rounded-lg p-1.5 text-muted-foreground/40 transition-colors hover:bg-rose-500/10 hover:text-rose-500"
             aria-label="Delete memory"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-4 w-4" />
           </button>
         </div>
 
-        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
           {profile.bio}
         </p>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           <Badge variant="secondary" className="font-medium">
             {profile.field}
           </Badge>
@@ -188,13 +220,13 @@ function ProfileCard({
           )}
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-2 border-t border-border/60 pt-4 text-center">
+        <div className="mt-4 grid grid-cols-3 gap-1 border-t border-border/60 pt-3 text-center">
           <Stat icon={FileText} value={counts?.documents ?? 0} label={t('profiles.card.docs')} />
           <Stat icon={Network} value={counts?.memories ?? 0} label={t('profiles.card.memories')} />
           <Stat icon={Clock} value={counts?.timelineEvents ?? 0} label={t('profiles.card.events')} />
         </div>
 
-        <Button onClick={onOpen} className="mt-5 w-full gap-2" variant="secondary">
+        <Button onClick={onOpen} className="press mt-4 w-full gap-2" variant="secondary">
           <MessagesSquare className="h-4 w-4" />
           {t('profiles.card.converse')}
           <ArrowRight className="h-3.5 w-3.5" />
@@ -214,53 +246,32 @@ function Stat({ icon: Icon, value, label }: { icon: typeof FileText; value: numb
   )
 }
 
-function EmptyState({ onSeed }: { onSeed: () => void }) {
-  const { openProfile } = useApp()
+function EmptyState({ onSeed, onCreate }: { onSeed: () => void; onCreate: () => void }) {
   const { t } = useI18n()
   return (
-    <Card className="mt-10 border-dashed border-border/70">
-      <CardContent className="flex flex-col items-center px-6 py-16 text-center">
+    <Card className="mt-6 border-dashed border-border/70">
+      <CardContent className="flex flex-col items-center px-6 py-14 text-center">
         <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-500/15 to-emerald-500/15 ring-1 ring-amber-500/20">
           <Brain className="h-7 w-7 text-amber-500" />
         </span>
         <h3 className="mt-5 text-xl font-semibold">{t('profiles.empty.title')}</h3>
-        <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          {t('profiles.empty.body')}
-        </p>
+        <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('profiles.empty.body')}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button onClick={onSeed} variant="outline" className="gap-2">
+          <Button onClick={onSeed} variant="outline" className="press gap-2">
             <Sparkles className="h-4 w-4 text-amber-500" />
             {t('profiles.empty.loadDemo')}
           </Button>
-          <CreateButton onCreated={(p) => openProfile(p.id, 'overview')} />
+          <Button onClick={onCreate} className="press gap-2">
+            <Plus className="h-4 w-4" />
+            {t('profiles.create')}
+          </Button>
         </div>
       </CardContent>
     </Card>
   )
 }
 
-function CreateButton({ onCreated }: { onCreated: (p: Profile) => void }) {
-  const { t } = useI18n()
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <Button onClick={() => setOpen(true)} className="gap-2">
-        <Plus className="h-4 w-4" />
-        {t('profiles.create')}
-      </Button>
-      <CreateProfileDialog
-        open={open}
-        onOpenChange={setOpen}
-        onCreated={(p) => {
-          setOpen(false)
-          onCreated(p)
-        }}
-      />
-    </>
-  )
-}
-
-export function CreateProfileDialog({
+function CreateProfileSheet({
   open,
   onOpenChange,
   onCreated,
@@ -306,78 +317,99 @@ export function CreateProfileDialog({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-lg">
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t('create.title')}</AlertDialogTitle>
-          <AlertDialogDescription>{t('create.subtitle')}</AlertDialogDescription>
-        </AlertDialogHeader>
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="mx-auto max-w-lg">
+        <DrawerHeader className="text-center">
+          <DrawerTitle className="text-lg font-semibold">{t('create.title')}</DrawerTitle>
+          <DrawerDescription>{t('create.subtitle')}</DrawerDescription>
+        </DrawerHeader>
 
-        <div className="grid gap-3 py-2">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Field label={t('create.name')}>
+        <div className="no-scrollbar max-h-[60vh] overflow-y-auto px-4 pb-2">
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label={t('create.name')}>
+                <input
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder={t('create.name.ph')}
+                />
+              </Field>
+              <Field label={t('create.titleField')}>
+                <input
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder={t('create.titleField.ph')}
+                />
+              </Field>
+            </div>
+            <Field label={t('create.field')}>
               <input
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder={t('create.name.ph')}
+                className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                value={form.field}
+                onChange={(e) => setForm({ ...form, field: e.target.value })}
+                placeholder={t('create.field.ph')}
               />
             </Field>
-            <Field label={t('create.titleField')}>
-              <input
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder={t('create.titleField.ph')}
+            <Field label={t('create.bio')}>
+              <textarea
+                className="h-20 w-full resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                value={form.bio}
+                onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                placeholder={t('create.bio.ph')}
               />
             </Field>
-          </div>
-          <Field label={t('create.field')}>
-            <input
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-              value={form.field}
-              onChange={(e) => setForm({ ...form, field: e.target.value })}
-              placeholder={t('create.field.ph')}
-            />
-          </Field>
-          <Field label={t('create.bio')}>
-            <textarea
-              className="h-20 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-              value={form.bio}
-              onChange={(e) => setForm({ ...form, bio: e.target.value })}
-              placeholder={t('create.bio.ph')}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label={t('create.birthYear')}>
-              <input
-                type="number"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                value={form.birthYear}
-                onChange={(e) => setForm({ ...form, birthYear: e.target.value })}
-                placeholder="1990"
-              />
-            </Field>
-            <Field label={t('create.deathYear')}>
-              <input
-                type="number"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-                value={form.deathYear}
-                onChange={(e) => setForm({ ...form, deathYear: e.target.value })}
-                placeholder="2033"
-              />
-            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={t('create.birthYear')}>
+                <input
+                  type="number"
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                  value={form.birthYear}
+                  onChange={(e) => setForm({ ...form, birthYear: e.target.value })}
+                  placeholder="1990"
+                />
+              </Field>
+              <Field label={t('create.deathYear')}>
+                <input
+                  type="number"
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                  value={form.deathYear}
+                  onChange={(e) => setForm({ ...form, deathYear: e.target.value })}
+                  placeholder="2033"
+                />
+              </Field>
+            </div>
           </div>
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={saving}>{t('profiles.delete.cancel')}</AlertDialogCancel>
-          <AlertDialogAction onClick={submit} disabled={saving}>
-            {saving ? t('creating') : t('create.submit')}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        <DrawerFooter className="flex-row gap-3 pb-safe">
+          <Button
+            variant="outline"
+            className="press h-12 flex-1"
+            onClick={() => onOpenChange(false)}
+            disabled={saving}
+          >
+            {t('profiles.delete.cancel')}
+          </Button>
+          <Button
+            className="press h-12 flex-1 gap-2"
+            onClick={submit}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> {t('creating')}
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" /> {t('create.submit')}
+              </>
+            )}
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   )
 }
 

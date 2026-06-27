@@ -139,3 +139,23 @@ Stage Summary:
 - Full app flow: Splash → Login (Name+Age) → Home → preserve/converse with memories → History → Settings (theme/language/logout) → Logout.
 - Bottom nav: Home, Memories, History, Settings (mobile); profile detail shows its own 6 tabs.
 - Both English and Hindi fully supported across all new screens.
+
+---
+Task ID: 13
+Agent: Orchestrator
+Task: Redesign mobile UI to feel like a native Android app — Material 3 bottom nav, compact app bar, bottom-sheet dialogs, page transitions, native touch feedback.
+
+Work Log:
+- globals.css: native app base — -webkit-tap-highlight-color: transparent, overscroll-behavior-y: none, touch-action: manipulation, user-select:none on chrome (header/nav/buttons) but text on content, Material elevation tiers (.elev-1/2/3), .press + .press-card active:scale utilities, safe-area helpers (.pt-safe/.pb-safe), .h-app/.min-h-app (100dvh), .no-scrollbar.
+- layout.tsx: switched to min-h-app (100dvh) for true app height; removed pb-14 hack (main handles its own pb-16).
+- mobile-nav.tsx: Material 3 redesign — 64px height, pill-shaped active indicator (layoutId="m3-nav-pill" with spring animation that slides between tabs), amber active color, larger 22px icons, 10px labels, pb-safe for notched devices.
+- site-header.tsx: compact 56px (h-14) opaque app bar with pt-safe; contextual title on profile detail ("All memories" back button); avatar→settings; desktop Home/Memories buttons hidden on mobile.
+- page.tsx: AnimatePresence app-like page transitions (fade + 8px slide, 220ms ease); main has pb-16 md:pb-0 to clear the fixed bottom nav; splash/login have their own exit animations.
+- profiles-view.tsx: converted create-profile + delete-confirm from centered AlertDialogs to native bottom sheets (vaul Drawer) sliding up from bottom; added mobile FAB (floating + button, bottom-20 right-4) for create; full-bleed single-column cards on mobile → grid on desktop; .press/.press-card native touch feedback on all interactive elements; compact header on mobile.
+- settings-view.tsx: converted logout + clear-local confirms to bottom sheets; native list rows with .press active:scale + active:bg-accent/60 press states; compact spacing on mobile.
+- Agent Browser verification (390×844 mobile): bottom nav 64px with pill indicator ✓, app bar 57px compact ✓, FAB on memories ✓, create-profile bottom sheet ✓, logout bottom sheet ✓, back-title app bar on profile detail ✓, page transitions ✓, tap highlight transparent ✓, overscroll contained ✓, desktop (1440×900): bottom nav hidden + header nav visible + FAB hidden ✓, 0 console errors ✓.
+
+Stage Summary:
+- Mobile UI now feels like a native Android app: Material 3 pill-indicator bottom nav, compact opaque app bar with contextual back titles, bottom-sheet dialogs (not centered modals), app-like page transitions, native touch feedback (press-scale, no tap flash, no overscroll bounce, no text-selection on chrome), FAB for primary actions.
+- Desktop remains a clean responsive web app (bottom nav hidden, header nav shown).
+- All dialogs (create profile, delete, logout, clear local) are now native bottom sheets.

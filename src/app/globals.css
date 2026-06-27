@@ -116,8 +116,30 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /* prevent the browser from zooming on input focus (iOS) + rubber-band scroll */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   body {
     @apply bg-background text-foreground;
+    /* native app feel: kill the gray tap flash + double-tap zoom + overscroll bounce */
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* UI chrome (header, nav, buttons) shouldn't be text-selectable — native apps don't allow it */
+  header, nav, button, [role="tab"], [role="tablist"] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  /* inputs and content areas remain selectable */
+  input, textarea, [contenteditable], p, li, h1, h2, h3 {
+    -webkit-user-select: text;
+    user-select: text;
   }
 }
 
@@ -137,6 +159,28 @@
   .glow-amber {
     box-shadow: 0 0 0 1px oklch(0.78 0.16 75 / 0.25), 0 8px 40px -8px oklch(0.78 0.16 75 / 0.35);
   }
+  /* Material-style elevation tiers */
+  .elev-1 { box-shadow: 0 1px 2px 0 oklch(0 0 0 / 0.06), 0 1px 3px 0 oklch(0 0 0 / 0.04); }
+  .elev-2 { box-shadow: 0 2px 6px -1px oklch(0 0 0 / 0.08), 0 1px 4px -1px oklch(0 0 0 / 0.05); }
+  .elev-3 { box-shadow: 0 8px 24px -4px oklch(0 0 0 / 0.12), 0 2px 8px -2px oklch(0 0 0 / 0.06); }
+  /* native press feedback */
+  .press {
+    transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease;
+  }
+  .press:active {
+    transform: scale(0.97);
+  }
+  .press-card:active {
+    transform: scale(0.985);
+  }
+  /* safe-area helpers for notched devices */
+  .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .h-app { height: 100dvh; }
+  .min-h-app { min-height: 100dvh; }
+  /* hide scrollbar but keep scroll */
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 }
 
 /* memory constellation animations */
