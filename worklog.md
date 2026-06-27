@@ -222,3 +222,17 @@ Stage Summary:
 - The entire website is now fully responsive with ZERO horizontal overflow on mobile (verified down to 320px / iPhone SE width).
 - The fix is universal (html+body overflow-x:hidden) so any future decorative elements are automatically contained.
 - Memory graph now scales fluidly on mobile instead of forcing a 600px min-width.
+
+---
+Task ID: 17
+Agent: Orchestrator
+Task: Center timeline cards on mobile + make footer compact with short text.
+
+Work Log:
+- timeline-view.tsx: redesigned mobile layout. Previously: left-aligned spine (left-4) with cards on the right side (grid-cols-[2rem_1fr]). Now: centered spine (left-1/2) on ALL screens, each event is a centered flex column — year badge centered on the spine, then full-width card centered below. Desktop keeps the alternating left/right 3-col grid. Mobile cards use slightly smaller padding/text (p-4/sm:p-5, text-sm/sm:text-base) for better density. All 10 events visible on mobile.
+- site-footer.tsx: made compact. Removed the long tagline paragraph. Now a single slim row: small ECHO AI logo (h-6) + Vision/Memories links + short "Built with ♥" note. Text is text-[11px]/text-[10px]. Reduced vertical padding (py-5). Added pb-16 md:pb-0 so the footer content clears the fixed mobile bottom nav.
+- Agent Browser verification (390px): Timeline tab shows all 10 events ✓, year badges centered on spine (center=195=viewport center, diff=0) ✓, cards full-width & centered (left=33, right=357, symmetric) ✓, no h-scroll ✓. Footer compact with short text ✓, content clears bottom nav (contentBottom=780=navTop) ✓. Also verified at 320px (iPhone SE): 10 events, centered, no h-scroll ✓. 0 console errors, lint clean.
+
+Stage Summary:
+- Timeline cards now centered on mobile with a centered spine — all events visible.
+- Footer is compact with short text and clears the mobile bottom nav.

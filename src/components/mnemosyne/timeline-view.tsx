@@ -236,12 +236,12 @@ export function TimelineView({
       ) : null}
 
       <div className="relative">
-        {/* Spine: thin neutral gradient line */}
+        {/* Spine: centered on ALL screens so cards sit symmetrically */}
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 left-4 top-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent md:left-1/2"
+          className="pointer-events-none absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent"
         />
-        {/* Desktop-only faint colored aura along the spine */}
+        {/* Faint colored aura along the spine */}
         <div
           aria-hidden
           className="pointer-events-none absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-1/2 bg-gradient-to-b from-emerald-500/15 via-violet-500/15 to-rose-500/15 blur-[2px] md:block"
@@ -257,21 +257,24 @@ export function TimelineView({
             return (
               <li
                 key={event.id}
-                className="relative grid grid-cols-[2rem_1fr] items-start gap-x-4 md:grid-cols-[1fr_auto_1fr] md:gap-x-10"
+                className="relative flex flex-col items-center md:grid md:grid-cols-[1fr_auto_1fr] md:items-start md:gap-x-10"
               >
-                {/* Mobile: glowing dot on the left spine */}
+                {/* Mobile: year badge centered on the spine */}
                 <div className="flex justify-center md:hidden">
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0.4 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
+                  <motion.div
+                    custom={i}
+                    variants={badgeVariants}
+                    initial="hidden"
+                    whileInView="visible"
                     viewport={{ once: true, margin: '-40px' }}
-                    transition={{ duration: 0.4, delay: 0.05 }}
                     className={cn(
-                      'mt-3 h-3 w-3 rounded-full ring-4 ring-background',
-                      style.dot,
+                      'relative z-10 flex items-center justify-center rounded-full border bg-background px-3 py-1 text-sm font-bold tabular-nums shadow-sm',
+                      style.badge,
                       style.glow
                     )}
-                  />
+                  >
+                    {event.year}
+                  </motion.div>
                 </div>
 
                 {/* Desktop: year badge sitting on the spine */}
@@ -292,7 +295,7 @@ export function TimelineView({
                   </motion.div>
                 </div>
 
-                {/* Event card */}
+                {/* Event card — full-width & centered on mobile, alternating on desktop */}
                 <motion.div
                   custom={i}
                   variants={cardVariants}
@@ -300,13 +303,13 @@ export function TimelineView({
                   whileInView="visible"
                   viewport={{ once: true, margin: '-60px' }}
                   className={cn(
-                    'relative',
+                    'relative mt-3 w-full md:mt-0',
                     isLeft ? 'md:col-start-1' : 'md:col-start-3'
                   )}
                 >
                   <article
                     className={cn(
-                      'group relative overflow-hidden rounded-xl border bg-card p-5 text-card-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md',
+                      'group relative overflow-hidden rounded-xl border bg-card p-4 text-card-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-5',
                       failure
                         ? 'border-rose-500/25 bg-rose-500/[0.035]'
                         : 'border-border'
@@ -321,38 +324,33 @@ export function TimelineView({
                       )}
                     />
 
-                    {/* Header: icon + type label + (mobile) big year */}
-                    <div className="mb-3 flex items-center gap-3">
+                    {/* Header: icon + type label */}
+                    <div className="mb-2.5 flex items-center gap-2.5 sm:gap-3">
                       <div
                         className={cn(
-                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
+                          'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9',
                           style.iconWrap
                         )}
                       >
-                        <Icon className="h-5 w-5" />
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
-                      <div className="flex min-w-0 flex-col">
-                        <span
-                          className={cn(
-                            'text-[11px] font-semibold uppercase tracking-[0.16em]',
-                            style.accentText
-                          )}
-                        >
-                          {style.label}
-                        </span>
-                        <span className="text-2xl font-bold leading-tight tabular-nums md:hidden">
-                          {event.year}
-                        </span>
-                      </div>
+                      <span
+                        className={cn(
+                          'text-[11px] font-semibold uppercase tracking-[0.16em]',
+                          style.accentText
+                        )}
+                      >
+                        {style.label}
+                      </span>
                     </div>
 
                     {/* Title */}
-                    <h3 className="mb-1.5 text-base font-semibold leading-snug">
+                    <h3 className="mb-1.5 text-sm font-semibold leading-snug sm:text-base">
                       {event.title}
                     </h3>
 
                     {/* Description */}
-                    <p className="text-sm leading-relaxed text-muted-foreground">
+                    <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
                       {event.description}
                     </p>
                   </article>
