@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Upload, FileText, Loader2, Sparkles, Check, FileUp, ClipboardPaste, Trash2 } from 'lucide-react'
+import { Upload, FileText, Loader2, Sparkles, Check, FileUp, ClipboardPaste, FileText as FilePdf } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -11,12 +11,30 @@ import { useI18n } from '@/lib/i18n'
 import { toast } from 'sonner'
 
 const SOURCE_TYPES = [
-  { value: 'pdf', label: 'PDF (text)', hint: 'Paste extracted PDF text' },
+  { value: 'pdf', label: 'PDF', hint: 'Upload a .pdf file' },
   { value: 'txt', label: 'Text', hint: 'Plain text notes' },
   { value: 'md', label: 'Markdown', hint: '.md journals & logs' },
-  { value: 'audio', label: 'Audio transcript', hint: 'Transcribed speech' },
   { value: 'note', label: 'Note', hint: 'Freeform note' },
 ]
+
+// Lazy-load pdfjs only when a PDF is actually selected (keeps the initial
+// bundle small and avoids SSR issues).
+async function extractPdfText(file: File): Promise<string> {
+  const pdfjs = await import('pdfjs-dist')
+  // Use the CDN worker that matches the installed version — avoids webpack
+  // worker bundling issues in Next.js.
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+  const buf = await file.arrayBuffer()
+  const pdf = await pdfjs.getDocument({ data: buf }).promise
+  const pages: string[] = []
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const content = await page.getTextContent()
+    const text = content.items.map((it: any) => ('str' in it ? it.str : '')).join(' ')
+    pages.push(text)
+  }
+  return pages.join('\n\n')
+}
 
 export function UploadPanel({
   profile,
@@ -31,6 +49,7 @@ export function UploadPanel({
   const [content, setContent] = useState('')
   const [docs, setDocs] = useState<Document[] | null>(null)
   const [busy, setBusy] = useState(false)
+  const [parsing, setParsing] = useState(false)
   const [stage, setStage] = useState<'idle' | 'reading' | 'extracting' | 'persistence'>('idle')
   const fileRef = useRef<HTMLInputElement>(null)
   const firstName = profile.name.split(' ').slice(-1)[0]
@@ -39,7 +58,32 @@ export function UploadPanel({
     api.listDocuments(profile.id).then(({ documents }) => setDocs(documents)).catch(() => {})
   }, [profile.id])
 
-  function readFile(file: File) {
+  async function readFile(file: File) {
+    const isPdf = /\.pdf$/i.test(file.name)
+    if (isPdf) {
+      // PDF: extract text via pdfjs
+      setParsing(true)
+      const tid = toast.loading('Parsing PDF…')
+      try {
+        const text = await extractPdfText(file)
+        if (!text || text.trim().length < 10) {
+          toast.error('Could not extract text from this PDF (it may be scanned images).', { id: tid })
+          setParsing(false)
+          return
+        }
+        const sliced = text.slice(0, 16000)
+        setContent(sliced)
+        if (!title) setTitle(file.name.replace(/\.pdf$/i, ''))
+        setSourceType('pdf')
+        toast.success(`Loaded ${file.name} (${sliced.length.toLocaleString()} chars from ${file.size.toLocaleString()} bytes)`, { id: tid })
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Failed to parse PDF', { id: tid })
+      } finally {
+        setParsing(false)
+      }
+      return
+    }
+    // Text-based file: read directly
     const reader = new FileReader()
     reader.onload = () => {
       const text = String(reader.result || '')
@@ -125,7 +169,7 @@ export function UploadPanel({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('upload.docTitlePh')}
-                disabled={busy}
+                disabled={busy || parsing}
               />
             </div>
 
@@ -138,7 +182,7 @@ export function UploadPanel({
                   <button
                     key={s.value}
                     onClick={() => setSourceType(s.value)}
-                    disabled={busy}
+                    disabled={busy || parsing}
                     className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                       sourceType === s.value
                         ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
@@ -164,7 +208,7 @@ export function UploadPanel({
                     variant="ghost"
                     size="sm"
                     onClick={pasteFromClipboard}
-                    disabled={busy}
+                    disabled={busy || parsing}
                     className="h-7 gap-1 text-xs"
                   >
                     <ClipboardPaste className="h-3 w-3" /> {t('upload.paste')}
@@ -173,15 +217,20 @@ export function UploadPanel({
                     variant="ghost"
                     size="sm"
                     onClick={() => fileRef.current?.click()}
-                    disabled={busy}
+                    disabled={busy || parsing}
                     className="h-7 gap-1 text-xs"
                   >
-                    <FileUp className="h-3 w-3" /> {t('upload.openFile')}
+                    {parsing ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <FileUp className="h-3 w-3" />
+                    )}{' '}
+                    {t('upload.openFile')}
                   </Button>
                   <input
                     ref={fileRef}
                     type="file"
-                    accept=".txt,.md,.markdown,.text,.csv,.json,.log"
+                    accept=".pdf,.txt,.md,.markdown,.text,.csv,.json,.log"
                     className="hidden"
                     onChange={(e) => {
                       const f = e.target.files?.[0]
@@ -195,13 +244,18 @@ export function UploadPanel({
                 value={content}
                 onChange={(e) => setContent(e.target.value.slice(0, 16000))}
                 placeholder={t('upload.contentPh')}
-                disabled={busy}
+                disabled={busy || parsing}
               />
+              {parsing && (
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Extracting text from PDF…
+                </p>
+              )}
             </div>
 
             <Button
               onClick={submit}
-              disabled={busy || !title.trim() || !content.trim()}
+              disabled={busy || parsing || !title.trim() || !content.trim()}
               className="w-full gap-2"
             >
               {busy ? (
@@ -266,7 +320,11 @@ export function UploadPanel({
                     animate={{ opacity: 1 }}
                     className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-background/50 p-3"
                   >
-                    <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    {d.sourceType === 'pdf' ? (
+                      <FilePdf className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                    ) : (
+                      <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium">{d.title}</p>
                       <p className="mt-0.5 text-[10px] text-muted-foreground">

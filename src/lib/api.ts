@@ -175,6 +175,5 @@ export const SOURCE_LABELS: Record<string, string> = {
   pdf: 'PDF',
   txt: 'Text',
   md: 'Markdown',
-  audio: 'Audio transcript',
   note: 'Note',
 }
