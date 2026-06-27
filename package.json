@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && cp .env .next/standalone/.env && cp .z-ai-config .next/standalone/.z-ai-config",
+    "start": "NODE_ENV=production node .next/standalone/server.js",
     "lint": "eslint .",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
