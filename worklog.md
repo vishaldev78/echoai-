@@ -236,3 +236,24 @@ Work Log:
 Stage Summary:
 - Timeline cards now centered on mobile with a centered spine — all events visible.
 - Footer is compact with short text and clears the mobile bottom nav.
+
+---
+Task ID: 19
+Agent: Orchestrator
+Task: Fix vertical scrolling not working with mouse wheel and keyboard arrows.
+
+Work Log:
+- Root cause: `overflow-x: hidden` was set on BOTH `html` and `body`. When both elements clip overflow, the browser can establish a scroll container on `body` that traps vertical scrolling — breaking mouse wheel and keyboard arrow/PageDown/Spacebar scrolling.
+- Fix (globals.css):
+  - html: removed `overflow-x: hidden` and `max-width: 100vw`; added `overflow-y: auto` to explicitly guarantee vertical document scrolling.
+  - body: changed `overflow-x: hidden` → `overflow-x: clip`. The `clip` value clips horizontal overflow (same visual result — no horizontal scroll) but does NOT create a scroll container, so it cannot trap vertical scrolling. Kept `max-width: 100vw`.
+- Agent Browser verification:
+  - Landing page (3733px tall): mouse wheel 500→scrollY 500, 800→1300 ✓; ArrowDown ×5 → scrollY 200 ✓; PageDown → 987 ✓; Spacebar → 787 ✓.
+  - Profile detail (2521px tall): wheel 500→500 ✓; ArrowDown+PageDown → 818 ✓.
+  - Mobile (390×844): wheel scroll works ✓.
+  - No horizontal overflow preserved: hasHScroll=false at 390px ✓.
+  - 0 console errors, lint clean.
+
+Stage Summary:
+- Vertical scrolling now works with mouse wheel, ArrowUp/ArrowDown, PageUp/PageDown, and Spacebar on all pages.
+- Horizontal overflow is still prevented (via overflow-x: clip on body) — no regression on the mobile responsive fix.
