@@ -257,3 +257,23 @@ Work Log:
 Stage Summary:
 - Vertical scrolling now works with mouse wheel, ArrowUp/ArrowDown, PageUp/PageDown, and Spacebar on all pages.
 - Horizontal overflow is still prevented (via overflow-x: clip on body) — no regression on the mobile responsive fix.
+
+---
+Task ID: 20
+Agent: Orchestrator
+Task: Make project run locally in VS Code with npm — clean unused folders, verify all features work.
+
+Work Log:
+- Removed unused folders/files: .zscripts/, agent-ctx/, download/, examples/, mini-services/, skills/, db/ (old SQLite — now using Neon), Caddyfile (sandbox gateway), dev.log, .next/ (build cache). (upload/ couldn't be removed — sandbox-mounted, harmless empty folder.)
+- package.json: renamed to "echo-ai". Simplified scripts for local npm use — dev: "next dev" (removed sandbox tee pipe), build: "next build" (removed standalone copy), start: "next start" (was bun-specific). Added postinstall: "prisma generate" so Prisma client auto-generates after npm install.
+- next.config.ts: removed `output: "standalone"` (was for Docker, not needed for local).
+- Verified Node v24 + npm 11 installed. Ran `npm install` → generated package-lock.json + Prisma client via postinstall hook.
+- Verified `npm run dev` starts cleanly (Ready in 756ms, HTTP 200).
+- Agent Browser full feature test on npm-run server: splash→login ✓, Name+Age login ✓, seed demo ✓, chat RAG grounded answer ("The 2031 cell. We hit 1000 cycles...") ✓, graph SVG renders ✓, timeline 11 events ✓, history API returns conversation ✓, data isolation (no/wrong user-id → 0 profiles) ✓. 0 console errors, 0 dev log errors, lint clean.
+- Wrote README.md with clear local VS Code setup: prerequisites, npm install, db:push, npm run dev, how-to-use guide, feature table, tech stack, project structure, npm scripts table.
+
+Stage Summary:
+- Project runs locally with npm: `npm install && npm run db:push && npm run dev` → http://localhost:3000.
+- All features working: auth (per-user data isolation), PDF upload + extraction, AI chat (RAG), graph, timeline, history, EN/HI i18n, theme toggle.
+- Clean file structure — only essential app files remain.
+- package-lock.json generated for npm users (bun.lock also kept for bun users).
