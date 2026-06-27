@@ -63,11 +63,11 @@ export function ProfileDetail({ profileId }: { profileId: string }) {
 
       {/* header */}
       <Card className="relative overflow-hidden border-border/60">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-fuchsia-500 via-emerald-500 to-cyan-500" />
-        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-emerald-500 to-cyan-500" />
+        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl" />
         <CardContent className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[auto_1fr_auto] lg:items-center">
-          <Avatar className="h-20 w-20 ring-4 ring-fuchsia-500/15">
-            <AvatarFallback className="bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 text-xl font-semibold text-fuchsia-600 dark:text-fuchsia-300">
+          <Avatar className="h-20 w-20 ring-4 ring-emerald-500/15">
+            <AvatarFallback className="bg-gradient-to-br from-emerald-500/25 to-emerald-500/25 text-xl font-semibold text-emerald-600 dark:text-emerald-300">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -82,15 +82,15 @@ export function ProfileDetail({ profileId }: { profileId: string }) {
                 </Badge>
               )}
             </div>
-            <p className="mt-0.5 text-sm text-fuchsia-600 dark:text-fuchsia-300">
+            <p className="mt-0.5 text-sm text-emerald-600 dark:text-emerald-300">
               {profile.title} · {profile.field}
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
               {profile.bio}
             </p>
             {profile.thinkingStyle && (
-              <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-fuchsia-500/20 bg-fuchsia-500/[0.04] px-3 py-2.5">
-                <Brain className="mt-0.5 h-4 w-4 shrink-0 text-fuchsia-500" />
+              <div className="mt-4 flex items-start gap-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] px-3 py-2.5">
+                <Brain className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   <span className="font-medium text-foreground">{t('profile.fingerprint')} — </span>
                   {profile.thinkingStyle.summary}
@@ -107,47 +107,49 @@ export function ProfileDetail({ profileId }: { profileId: string }) {
         </CardContent>
       </Card>
 
-      <Tabs value={activeTab} onValueChange={(v) => setTab(v as ProfileTab)} className="mt-6">
-        {/* desktop tab strip — hidden on mobile (bottom nav handles it) */}
-        <div className="hidden overflow-x-auto md:block">
-          <TabsList className="h-auto w-max bg-background p-1">
-            <TabsTrigger value="overview" className="gap-1.5">
-              <Layers className="h-3.5 w-3.5" /> {t('profile.tab.overview')}
+      <Tabs value={activeTab} onValueChange={(v) => setTab(v as ProfileTab)} className="mt-4">
+        {/* Sticky scrollable sub-navigation tab strip — visible on ALL screens.
+            Industry-standard pattern for sub-navigation (YouTube, Chrome, Material).
+            Horizontally scrollable with hidden scrollbar on mobile. */}
+        <div className="no-scrollbar sticky top-14 z-30 -mx-4 mb-2 overflow-x-auto border-b border-border/60 bg-background/95 px-4 backdrop-blur-xl sm:top-16 sm:mx-0 sm:rounded-xl sm:border sm:px-1">
+          <TabsList className="no-scrollbar h-12 w-max gap-1 bg-transparent p-1">
+            <TabsTrigger value="overview" className="gap-1.5 rounded-lg px-3 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400">
+              <Layers className="h-4 w-4" /> <span className="text-xs font-medium sm:text-sm">{t('profile.tab.overview')}</span>
             </TabsTrigger>
-            <TabsTrigger value="upload" className="gap-1.5">
-              <Upload className="h-3.5 w-3.5" /> {t('profile.tab.upload')}
+            <TabsTrigger value="upload" className="gap-1.5 rounded-lg px-3 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400">
+              <Upload className="h-4 w-4" /> <span className="text-xs font-medium sm:text-sm">{t('profile.tab.upload')}</span>
             </TabsTrigger>
-            <TabsTrigger value="memories" className="gap-1.5">
-              <Brain className="h-3.5 w-3.5" /> {t('profile.tab.memories')}
+            <TabsTrigger value="memories" className="gap-1.5 rounded-lg px-3 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400">
+              <Brain className="h-4 w-4" /> <span className="text-xs font-medium sm:text-sm">{t('profile.tab.memories')}</span>
             </TabsTrigger>
-            <TabsTrigger value="graph" className="gap-1.5">
-              <Network className="h-3.5 w-3.5" /> {t('profile.tab.graph')}
+            <TabsTrigger value="graph" className="gap-1.5 rounded-lg px-3 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400">
+              <Network className="h-4 w-4" /> <span className="text-xs font-medium sm:text-sm">{t('profile.tab.graph')}</span>
             </TabsTrigger>
-            <TabsTrigger value="timeline" className="gap-1.5">
-              <Clock className="h-3.5 w-3.5" /> {t('profile.tab.timeline')}
+            <TabsTrigger value="timeline" className="gap-1.5 rounded-lg px-3 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400">
+              <Clock className="h-4 w-4" /> <span className="text-xs font-medium sm:text-sm">{t('profile.tab.timeline')}</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="gap-1.5">
-              <MessagesSquare className="h-3.5 w-3.5" /> {t('profile.tab.ask')}
+            <TabsTrigger value="chat" className="gap-1.5 rounded-lg px-3 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400">
+              <MessagesSquare className="h-4 w-4" /> <span className="text-xs font-medium sm:text-sm">{t('profile.tab.ask')}</span>
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="overview" className="mt-6">
+        <TabsContent value="overview" className="mt-4">
           <OverviewPanel profile={profile} />
         </TabsContent>
-        <TabsContent value="upload" className="mt-6">
+        <TabsContent value="upload" className="mt-4">
           <UploadPanel profile={profile} onUploaded={() => { reload(); setTab('memories') }} />
         </TabsContent>
-        <TabsContent value="memories" className="mt-6">
+        <TabsContent value="memories" className="mt-4">
           <MemoriesPanel profileId={profile.id} />
         </TabsContent>
-        <TabsContent value="graph" className="mt-6">
+        <TabsContent value="graph" className="mt-4">
           <GraphPanel profileId={profile.id} profileName={profile.name} />
         </TabsContent>
-        <TabsContent value="timeline" className="mt-6">
+        <TabsContent value="timeline" className="mt-4">
           <TimelinePanel profileId={profile.id} profileName={profile.name} />
         </TabsContent>
-        <TabsContent value="chat" className="mt-6">
+        <TabsContent value="chat" className="mt-4">
           <ChatPanel profile={profile} />
         </TabsContent>
       </Tabs>
@@ -158,7 +160,7 @@ export function ProfileDetail({ profileId }: { profileId: string }) {
 function HeaderStat({ icon: Icon, value, label }: { icon: typeof Layers; value: number; label: string }) {
   return (
     <div className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-background/60 px-3 py-2">
-      <Icon className="h-4 w-4 text-fuchsia-500" />
+      <Icon className="h-4 w-4 text-emerald-500" />
       <div className="leading-none">
         <div className="text-base font-semibold tabular-nums">{value}</div>
         <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>

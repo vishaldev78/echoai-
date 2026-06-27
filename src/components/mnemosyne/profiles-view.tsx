@@ -77,7 +77,7 @@ export function ProfilesView() {
         </div>
         <div className="flex shrink-0 gap-2">
           <Button variant="outline" onClick={seedDemo} className="press gap-2">
-            <Sparkles className="h-4 w-4 text-fuchsia-500" />
+            <Sparkles className="h-4 w-4 text-emerald-500" />
             <span className="hidden sm:inline">{t('profiles.loadDemo')}</span>
           </Button>
           <Button onClick={() => setCreating(true)} className="press gap-2">
@@ -116,7 +116,7 @@ export function ProfilesView() {
       {!loading && profiles && profiles.length > 0 && (
         <button
           onClick={() => setCreating(true)}
-          className="press fixed bottom-20 right-4 z-30 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 text-fuchsia-950 shadow-lg shadow-fuchsia-500/30 md:hidden"
+          className="press fixed bottom-20 right-4 z-30 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-emerald-950 shadow-lg shadow-emerald-500/30 md:hidden"
           aria-label={t('profiles.create')}
         >
           <Plus className="h-6 w-6" />
@@ -182,12 +182,12 @@ function ProfileCard({
     .toUpperCase()
   const counts = profile._count
   return (
-    <Card className="press-card group relative flex h-full flex-col overflow-hidden border-border/60 transition-colors hover:border-fuchsia-500/40">
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-fuchsia-500/60 to-emerald-500/60" />
+    <Card className="press-card group relative flex h-full flex-col overflow-hidden border-border/60 transition-colors hover:border-emerald-500/40">
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-emerald-500/60 to-emerald-500/60" />
       <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <Avatar className="h-11 w-11 shrink-0 ring-2 ring-fuchsia-500/20">
-            <AvatarFallback className="bg-gradient-to-br from-fuchsia-500/20 to-emerald-500/20 font-semibold text-fuchsia-600 dark:text-fuchsia-300">
+          <Avatar className="h-11 w-11 shrink-0 ring-2 ring-emerald-500/20">
+            <AvatarFallback className="bg-gradient-to-br from-emerald-500/20 to-emerald-500/20 font-semibold text-emerald-600 dark:text-emerald-300">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -251,14 +251,14 @@ function EmptyState({ onSeed, onCreate }: { onSeed: () => void; onCreate: () => 
   return (
     <Card className="mt-6 border-dashed border-border/70">
       <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500/15 to-emerald-500/15 ring-1 ring-fuchsia-500/20">
-          <Brain className="h-7 w-7 text-fuchsia-500" />
+        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/15 ring-1 ring-emerald-500/20">
+          <Brain className="h-7 w-7 text-emerald-500" />
         </span>
         <h3 className="mt-5 text-xl font-semibold">{t('profiles.empty.title')}</h3>
         <p className="mt-2 max-w-md text-sm text-muted-foreground">{t('profiles.empty.body')}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Button onClick={onSeed} variant="outline" className="press gap-2">
-            <Sparkles className="h-4 w-4 text-fuchsia-500" />
+            <Sparkles className="h-4 w-4 text-emerald-500" />
             {t('profiles.empty.loadDemo')}
           </Button>
           <Button onClick={onCreate} className="press gap-2">
@@ -329,7 +329,7 @@ function CreateProfileSheet({
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label={t('create.name')}>
                 <input
-                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder={t('create.name.ph')}
@@ -337,7 +337,7 @@ function CreateProfileSheet({
               </Field>
               <Field label={t('create.titleField')}>
                 <input
-                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   placeholder={t('create.titleField.ph')}
@@ -346,7 +346,7 @@ function CreateProfileSheet({
             </div>
             <Field label={t('create.field')}>
               <input
-                className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                 value={form.field}
                 onChange={(e) => setForm({ ...form, field: e.target.value })}
                 placeholder={t('create.field.ph')}
@@ -354,7 +354,7 @@ function CreateProfileSheet({
             </Field>
             <Field label={t('create.bio')}>
               <textarea
-                className="h-20 w-full resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                className="h-20 w-full resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                 value={form.bio}
                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
                 placeholder={t('create.bio.ph')}
@@ -364,7 +364,7 @@ function CreateProfileSheet({
               <Field label={t('create.birthYear')}>
                 <input
                   type="number"
-                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                   value={form.birthYear}
                   onChange={(e) => setForm({ ...form, birthYear: e.target.value })}
                   placeholder="1990"
@@ -373,7 +373,7 @@ function CreateProfileSheet({
               <Field label={t('create.deathYear')}>
                 <input
                   type="number"
-                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                   value={form.deathYear}
                   onChange={(e) => setForm({ ...form, deathYear: e.target.value })}
                   placeholder="2033"

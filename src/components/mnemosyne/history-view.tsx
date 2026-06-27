@@ -63,8 +63,8 @@ export function HistoryView() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <div className="flex items-center gap-2.5">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500/15 to-emerald-500/15 ring-1 ring-fuchsia-500/20">
-          <Clock className="h-5 w-5 text-fuchsia-500" />
+        <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-500/15 ring-1 ring-emerald-500/20">
+          <Clock className="h-5 w-5 text-emerald-500" />
         </span>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t('history.title')}</h1>
@@ -75,7 +75,7 @@ export function HistoryView() {
       {!items || items.length === 0 ? (
         <Card className="mt-8 border-dashed border-border/60">
           <CardContent className="flex flex-col items-center px-6 py-14 text-center">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500/10 to-emerald-500/10 ring-1 ring-fuchsia-500/15">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/10 ring-1 ring-emerald-500/15">
               <MessagesSquare className="h-6 w-6 text-muted-foreground" />
             </span>
             <h3 className="mt-4 text-base font-semibold">{t('history.empty.title')}</h3>
@@ -106,12 +106,12 @@ export function HistoryView() {
                 transition={{ delay: Math.min(i * 0.04, 0.3) }}
               >
                 <Card
-                  className="group cursor-pointer border-border/60 transition-all hover:border-fuchsia-500/40 hover:shadow-md hover:shadow-fuchsia-500/5"
+                  className="group cursor-pointer border-border/60 transition-all hover:border-emerald-500/40 hover:shadow-md hover:shadow-emerald-500/5"
                   onClick={() => openProfile(item.profileId, 'chat')}
                 >
                   <CardContent className="flex items-start gap-3.5 p-4">
-                    <Avatar className="h-10 w-10 shrink-0 ring-2 ring-fuchsia-500/15">
-                      <AvatarFallback className="bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 text-xs font-semibold text-fuchsia-600 dark:text-fuchsia-300">
+                    <Avatar className="h-10 w-10 shrink-0 ring-2 ring-emerald-500/15">
+                      <AvatarFallback className="bg-gradient-to-br from-emerald-500/25 to-emerald-500/25 text-xs font-semibold text-emerald-600 dark:text-emerald-300">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
@@ -123,14 +123,14 @@ export function HistoryView() {
                         </span>
                       </div>
                       <div className="mt-1.5 flex items-start gap-1.5">
-                        <span className="mt-0.5 text-[10px] font-semibold uppercase text-fuchsia-500/70">
+                        <span className="mt-0.5 text-[10px] font-semibold uppercase text-emerald-500/70">
                           {lang === 'hi' ? 'आप' : 'You'}
                         </span>
                         <p className="line-clamp-1 text-sm text-foreground/90">{item.firstQuestion}</p>
                       </div>
                       {item.lastAnswer && (
                         <div className="mt-1 flex items-start gap-1.5">
-                          <Brain className="mt-0.5 h-3 w-3 shrink-0 text-fuchsia-500/70" />
+                          <Brain className="mt-0.5 h-3 w-3 shrink-0 text-emerald-500/70" />
                           <p className="line-clamp-1 text-xs text-muted-foreground">
                             {item.lastAnswer}
                           </p>
@@ -141,7 +141,7 @@ export function HistoryView() {
                           {item.messageCount} {t('history.messages')}
                         </Badge>
                         <span className="text-[10px] text-muted-foreground">{item.profileField}</span>
-                        <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-fuchsia-500 opacity-0 transition-opacity group-hover:opacity-100">
+                        <span className="ml-auto flex items-center gap-1 text-[10px] font-medium text-emerald-500 opacity-0 transition-opacity group-hover:opacity-100">
                           {t('history.continue')} <ArrowRight className="h-2.5 w-2.5" />
                         </span>
                       </div>

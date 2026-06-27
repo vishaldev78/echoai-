@@ -49,12 +49,12 @@ export function SiteHeader() {
               className="press flex items-center gap-2.5"
               aria-label="ECHO AI home"
             >
-              <span className="relative grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-fuchsia-500/20 to-emerald-500/20 ring-1 ring-fuchsia-500/30">
-                <Brain className="h-[18px] w-[18px] text-fuchsia-500" />
+              <span className="relative grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-500/20 ring-1 ring-emerald-500/30">
+                <Brain className="h-[18px] w-[18px] text-emerald-500" />
               </span>
               <span className="flex flex-col items-start leading-none">
                 <span className="text-[15px] font-semibold tracking-tight">ECHO</span>
-                <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-fuchsia-500/80">
+                <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-emerald-500/80">
                   AI
                 </span>
               </span>
@@ -87,8 +87,8 @@ export function SiteHeader() {
             className="press flex items-center gap-2 rounded-full p-1 pr-1 sm:pr-3"
             aria-label={t('nav.settings')}
           >
-            <Avatar className="h-9 w-9 ring-2 ring-fuchsia-500/20">
-              <AvatarFallback className="bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 text-[11px] font-semibold text-fuchsia-600 dark:text-fuchsia-300">
+            <Avatar className="h-9 w-9 ring-2 ring-emerald-500/20">
+              <AvatarFallback className="bg-gradient-to-br from-emerald-500/25 to-emerald-500/25 text-[11px] font-semibold text-emerald-600 dark:text-emerald-300">
                 {(user?.name || '?')
                   .split(' ')
                   .map((s) => s[0])

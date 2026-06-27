@@ -62,7 +62,7 @@ export function MemoriesPanel({ profileId }: { profileId: string }) {
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Brain className="h-5 w-5 text-fuchsia-500" /> {t('memories.title')}
+            <Brain className="h-5 w-5 text-emerald-500" /> {t('memories.title')}
             <Badge variant="secondary">{memories.length}</Badge>
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -86,7 +86,7 @@ export function MemoriesPanel({ profileId }: { profileId: string }) {
           onClick={() => setFilter(null)}
           className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
             !filter
-              ? 'border-fuchsia-500/40 bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300'
+              ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
               : 'border-border/60 text-muted-foreground hover:text-foreground'
           }`}
         >

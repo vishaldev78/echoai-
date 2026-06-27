@@ -179,3 +179,20 @@ Stage Summary:
 - New brand color: fuchsia (hue 300) — clearly not indigo/blue, modern and distinctive. Gradient is fuchsia→rose→cyan.
 - Per-user data isolation: every profile/memory/document/graph/timeline/conversation is scoped to the logged-in user via ownerId + x-user-id header. Users cannot see or access each other's data.
 - DB reset and re-synced on Neon with the new ownerId relation.
+
+---
+Task ID: 15
+Agent: Orchestrator
+Task: Fix profile sub-tabs not visible on mobile + recolor to industry-standard emerald.
+
+Work Log:
+- Root cause: 6 profile tabs crammed into the bottom nav (65px each on 390px viewport) — technically present but too cramped to be usable; the pill indicator nearly filled each tab.
+- Fix: moved profile sub-navigation (Overview/Upload/Memories/Graph/Timeline/Ask) to a STICKY SCROLLABLE TOP TAB STRIP inside profile-detail — the industry-standard Material/Android pattern for sub-navigation (used by YouTube, Chrome, etc.). Visible on ALL screen sizes. Horizontally scrollable with hidden scrollbar on mobile. Sticky below the app bar (top-14/top-16). Active tab gets emerald-500/15 background + emerald text.
+- mobile-nav simplified: ALWAYS shows the 4 global tabs (Home/Memories/History/Settings) on every screen — consistent, not confusing. "Memories" stays active when inside a profile. Removed the cramped 6-tab profile branch entirely.
+- Recolor: fuchsia (hue 300) → emerald (hue 160) — the quintessential production-ready, industry-standard color (trust, growth, used by Stripe/Linear/health-tech). Updated all CSS variables in globals.css (light+dark: --primary, --ring, --sidebar-*, --chart-*), .text-gradient-brand (emerald→teal→cyan), .glow-brand, scrollbar. Bulk-replaced fuchsia→emerald Tailwind classes across all 16 component files. Updated memory-graph person node to emerald (#10b981), differentiated research node to teal (#14b8a6) to avoid clash. Constellation dots/lines now emerald.
+- Agent Browser verification (390×844 mobile): top tab strip shows all 6 tabs (Overview/Upload/Memories/Graph/Timeline/Ask) ✓, Overview active ✓, Graph tab click → SVG renders ✓, Ask tab click → chat textarea visible ✓, bottom nav shows 4 global tabs with Memories active ✓. Desktop (1440×900): bottom nav hidden ✓, tab strip visible as rounded card with all 6 tabs ✓, emerald active color confirmed (lab green hue) ✓. 0 console errors, lint clean.
+
+Stage Summary:
+- Profile sub-tabs (Overview/Upload/Memories/Graph/Timeline/Ask) now ALWAYS visible in a sticky scrollable top tab strip — no more cramped bottom-nav cramming.
+- Bottom nav consistently shows Home/Memories/History/Settings on every screen.
+- Brand color: emerald (hue 160) — industry-standard, production-ready, professional.

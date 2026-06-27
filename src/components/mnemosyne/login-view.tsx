@@ -40,7 +40,7 @@ export function LoginView() {
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
       {/* ambient background */}
-      <div className="pointer-events-none absolute -top-1/3 left-1/2 h-[50vh] w-[50vh] -translate-x-1/2 rounded-full bg-fuchsia-500/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -top-1/3 left-1/2 h-[50vh] w-[50vh] -translate-x-1/2 rounded-full bg-emerald-500/15 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-0 left-1/4 h-[35vh] w-[35vh] rounded-full bg-emerald-500/12 blur-[120px]" />
       <div className="absolute inset-0 -z-10 bg-grid opacity-30" />
 
@@ -52,11 +52,11 @@ export function LoginView() {
       >
         {/* brand */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <span className="relative mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 ring-1 ring-fuchsia-500/40">
-            <Brain className="h-8 w-8 text-fuchsia-500" />
+          <span className="relative mb-5 grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-emerald-500/25 to-emerald-500/25 ring-1 ring-emerald-500/40">
+            <Brain className="h-8 w-8 text-emerald-500" />
           </span>
           <h1 className="text-2xl font-semibold tracking-tight">{t('login.welcome')}</h1>
-          <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.3em] text-fuchsia-500/80">
+          <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.3em] text-emerald-500/80">
             ECHO AI
           </p>
           <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
@@ -81,7 +81,7 @@ export function LoginView() {
                     placeholder={t('login.namePh')}
                     disabled={busy}
                     autoComplete="name"
-                    className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
               </div>
@@ -102,7 +102,7 @@ export function LoginView() {
                     onChange={(e) => setAge(e.target.value)}
                     placeholder={t('login.agePh')}
                     disabled={busy}
-                    className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
               </div>
@@ -110,7 +110,7 @@ export function LoginView() {
               <Button
                 type="submit"
                 disabled={busy}
-                className="glow-brand h-12 w-full gap-2 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 text-base font-semibold text-fuchsia-950 hover:from-fuchsia-400 hover:to-fuchsia-500"
+                className="glow-brand h-12 w-full gap-2 bg-gradient-to-br from-emerald-500 to-emerald-600 text-base font-semibold text-emerald-950 hover:from-emerald-400 hover:to-emerald-500"
               >
                 {busy ? (
                   <>

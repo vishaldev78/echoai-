@@ -68,10 +68,10 @@ export function SettingsView() {
 
       {/* Account card */}
       <Card className="mt-5 overflow-hidden border-border/60">
-        <div className="h-1 bg-gradient-to-r from-fuchsia-500 via-emerald-500 to-cyan-500" />
+        <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-500 to-cyan-500" />
         <CardContent className="flex items-center gap-4 p-4 sm:p-5">
-          <Avatar className="h-14 w-14 ring-2 ring-fuchsia-500/20">
-            <AvatarFallback className="bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 font-semibold text-fuchsia-600 dark:text-fuchsia-300">
+          <Avatar className="h-14 w-14 ring-2 ring-emerald-500/20">
+            <AvatarFallback className="bg-gradient-to-br from-emerald-500/25 to-emerald-500/25 font-semibold text-emerald-600 dark:text-emerald-300">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -224,7 +224,7 @@ function Row({
     >
       <span
         className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${
-          danger ? 'bg-rose-500/10 text-rose-500' : 'bg-fuchsia-500/10 text-fuchsia-500'
+          danger ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'
         }`}
       >
         <Icon className="h-[18px] w-[18px]" />

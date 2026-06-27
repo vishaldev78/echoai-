@@ -44,9 +44,9 @@ export function OverviewPanel({ profile }: { profile: Profile }) {
       {/* Left: thinking style + featured memories */}
       <div className="space-y-5 lg:col-span-2">
         {ts && (
-          <Card className="overflow-hidden border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.05] to-transparent">
+          <Card className="overflow-hidden border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.05] to-transparent">
             <CardContent className="p-6">
-              <div className="flex items-center gap-2 text-fuchsia-600 dark:text-fuchsia-300">
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
                 <Brain className="h-4 w-4" />
                 <span className="text-xs font-semibold uppercase tracking-[0.15em]">
                   {t('profile.fingerprint')}
@@ -65,7 +65,7 @@ export function OverviewPanel({ profile }: { profile: Profile }) {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="h-4 w-4 text-fuchsia-500" /> {t('overview.featured')}
+              <Sparkles className="h-4 w-4 text-emerald-500" /> {t('overview.featured')}
             </h3>
             <Button variant="ghost" size="sm" onClick={() => setTab('memories')} className="gap-1 text-muted-foreground">
               {t('overview.all')} <ArrowRight className="h-3 w-3" />
@@ -112,7 +112,7 @@ export function OverviewPanel({ profile }: { profile: Profile }) {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <Network className="h-4 w-4 text-fuchsia-500" /> {t('overview.graphTitle')}
+              <Network className="h-4 w-4 text-emerald-500" /> {t('overview.graphTitle')}
             </h3>
             <Button variant="ghost" size="sm" onClick={() => setTab('graph')} className="gap-1 text-muted-foreground">
               {t('overview.explore')} <ArrowRight className="h-3 w-3" />
@@ -132,10 +132,10 @@ export function OverviewPanel({ profile }: { profile: Profile }) {
 
       {/* Right: CTA + recent timeline */}
       <div className="space-y-5">
-        <Card className="overflow-hidden border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/10 to-emerald-500/10">
+        <Card className="overflow-hidden border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-emerald-500/10">
           <CardContent className="p-6 text-center">
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-fuchsia-500/15 ring-1 ring-fuchsia-500/25">
-              <MessagesSquare className="h-6 w-6 text-fuchsia-500" />
+            <span className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-emerald-500/15 ring-1 ring-emerald-500/25">
+              <MessagesSquare className="h-6 w-6 text-emerald-500" />
             </span>
             <h3 className="mt-4 font-semibold">{t('overview.askTitle')}</h3>
             <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
@@ -150,7 +150,7 @@ export function OverviewPanel({ profile }: { profile: Profile }) {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <Clock className="h-4 w-4 text-fuchsia-500" /> {t('overview.recentTimeline')}
+              <Clock className="h-4 w-4 text-emerald-500" /> {t('overview.recentTimeline')}
             </h3>
             <Button variant="ghost" size="sm" onClick={() => setTab('timeline')} className="gap-1 text-muted-foreground">
               {t('overview.all')} <ArrowRight className="h-3 w-3" />
