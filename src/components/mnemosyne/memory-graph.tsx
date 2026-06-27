@@ -441,12 +441,12 @@ export function MemoryGraph({
         })}
       </div>
 
-      {/* SVG graph */}
+      {/* SVG graph — responsive: scales down on mobile, scrolls only if needed on very small screens */}
       <div className="overflow-x-auto rounded-xl border border-border/50 bg-gradient-to-br from-background to-muted/20">
         <svg
           ref={svgRef}
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-          className="h-auto w-full min-w-[600px]"
+          className="h-auto w-full min-w-[340px] sm:min-w-[600px]"
           style={{ aspectRatio: `${VIEW_W} / ${VIEW_H}` }}
           role="img"
           aria-label="Memory knowledge graph"

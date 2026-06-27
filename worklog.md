@@ -196,3 +196,29 @@ Stage Summary:
 - Profile sub-tabs (Overview/Upload/Memories/Graph/Timeline/Ask) now ALWAYS visible in a sticky scrollable top tab strip — no more cramped bottom-nav cramming.
 - Bottom nav consistently shows Home/Memories/History/Settings on every screen.
 - Brand color: emerald (hue 160) — industry-standard, production-ready, professional.
+
+---
+Task ID: 16
+Agent: Orchestrator
+Task: Make the whole website fully responsive — zero horizontal overflow on mobile.
+
+Work Log:
+- Root cause audit (agent-browser at 390px + 320px): identified overflow sources — decorative glow blobs (absolute positioned extending past viewport), the desktop tab strip (w-max ~582px), and the memory-graph SVG (min-w-[600px]).
+- globals.css: added `overflow-x: hidden` + `max-width: 100vw` to both `html` and `body`. This is the robust industry-standard guarantee — decorative elements that bleed past the viewport are clipped instead of causing horizontal scroll. Affects the entire app universally.
+- memory-graph.tsx: made the SVG responsive — `min-w-[600px]` → `min-w-[340px] sm:min-w-[600px]`. On phones the graph now scales down to fit; on >=640px screens it uses the full 600px min for readability. The container's `overflow-x-auto` still allows internal scroll if needed on very dense graphs.
+- Verified every view + every profile tab at 390px AND 320px (iPhone SE, narrowest common phone):
+  - Home: hasHScroll=false ✓
+  - Memories: hasHScroll=false ✓
+  - History: hasHScroll=false ✓
+  - Settings: hasHScroll=false ✓
+  - Profile → Overview/Upload/Memories/Graph/Timeline/Ask: all hasHScroll=false ✓
+  - Create-profile bottom sheet: 0 overflow elements ✓
+  - Login screen @320px: hasHScroll=false ✓
+  - Chat with messages: hasHScroll=false ✓
+  - Multi-breakpoint (375/390/768): all hasHScroll=false ✓
+- 0 console errors, lint clean.
+
+Stage Summary:
+- The entire website is now fully responsive with ZERO horizontal overflow on mobile (verified down to 320px / iPhone SE width).
+- The fix is universal (html+body overflow-x:hidden) so any future decorative elements are automatically contained.
+- Memory graph now scales fluidly on mobile instead of forcing a 600px min-width.
