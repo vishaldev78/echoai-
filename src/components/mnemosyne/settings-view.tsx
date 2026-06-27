@@ -67,17 +67,19 @@ export function SettingsView() {
       <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t('settings.title')}</h1>
 
       {/* Account card */}
-      <Card className="mt-5 overflow-hidden border-border/60">
-        <div className="h-1 bg-gradient-to-r from-emerald-500 via-emerald-500 to-cyan-500" />
-        <CardContent className="flex items-center gap-4 p-4 sm:p-5">
-          <Avatar className="h-14 w-14 ring-2 ring-emerald-500/20">
-            <AvatarFallback className="bg-gradient-to-br from-emerald-500/25 to-emerald-500/25 font-semibold text-emerald-600 dark:text-emerald-300">
+      <Card className="relative mt-5 overflow-hidden border-border/60 bg-gradient-to-br from-emerald-500/[0.06] via-card to-card">
+        <CardContent className="relative flex items-center gap-4 p-5 sm:p-6">
+          <Avatar className="h-16 w-16 shrink-0 ring-4 ring-emerald-500/15">
+            <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-xl font-bold text-white">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-lg font-semibold">{user?.name}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-400">
+              {t('settings.account')}
+            </p>
+            <p className="mt-0.5 truncate text-xl font-semibold tracking-tight">{user?.name}</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {user?.age} {lang === 'hi' ? 'वर्ष' : 'years'}
             </p>
           </div>
