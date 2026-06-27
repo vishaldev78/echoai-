@@ -1,10 +1,12 @@
 'use client'
 
-import { Brain, Github, Heart } from 'lucide-react'
+import { Brain, Github } from 'lucide-react'
 import { useApp } from '@/lib/store'
+import { useI18n } from '@/lib/i18n'
 
 export function SiteFooter() {
   const { goLanding, goProfiles } = useApp()
+  const { t } = useI18n()
   return (
     <footer className="mt-auto border-t border-border/60 bg-background/60">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
@@ -15,8 +17,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-semibold">Mnemosyne AI</p>
             <p className="mt-0.5 max-w-md text-xs leading-relaxed text-muted-foreground">
-              Books preserved what humans knew. Mnemosyne preserves how humans thought —
-              a digital memory layer for humanity.
+              {t('footer.tagline')}
             </p>
           </div>
         </div>
@@ -24,10 +25,10 @@ export function SiteFooter() {
         <div className="flex flex-col items-start gap-3 text-xs text-muted-foreground md:items-end">
           <div className="flex items-center gap-4">
             <button onClick={goLanding} className="hover:text-foreground transition-colors">
-              Vision
+              {t('nav.vision')}
             </button>
             <button onClick={goProfiles} className="hover:text-foreground transition-colors">
-              Memories
+              {t('nav.memories')}
             </button>
             <a
               href="#"
@@ -37,8 +38,7 @@ export function SiteFooter() {
             </a>
           </div>
           <p className="flex items-center gap-1.5">
-            Built with <Heart className="h-3 w-3 fill-rose-500 text-rose-500" /> for the generations
-            who come next.
+            {t('footer.built')}
           </p>
         </div>
       </div>

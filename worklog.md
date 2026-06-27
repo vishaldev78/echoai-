@@ -116,3 +116,26 @@ Stage Summary:
 - All 6 core PRD features implemented: Knowledge Upload, AI Extraction, Memory Graph, Ask The Memory (RAG), Thinking Style Model, Timeline Memory.
 - Demo memory (Dr. Aryan Rao) loads instantly via /api/seed; users can also create + upload their own.
 - DB: SQLite via Prisma (schema is provider-agnostic — swap datasource to Neon/Postgres for production by changing provider + url).
+
+---
+Task ID: 12
+Agent: Orchestrator
+Task: Add Hindi/English i18n + mobile bottom nav (Home/Memories/History/Settings) + login (Name+Age) + splash screen + logout + settings hub + switch DB to Neon Postgres.
+
+Work Log:
+- DB: switched datasource to postgresql, DATABASE_URL → Neon pooler connection string. db:push --accept-data-loss cleared leftover tables, created all tables on Neon. Added User model (name+age, unique constraint). Added db:push:force script.
+- Store: added views splash|login|home|memories|profile|history|settings; added user auth state + setUser (transitions to home) + logout (clears localStorage, returns to login) + hydrateUser(). Kept goLanding/goProfiles aliases for backward compat.
+- i18n: added ~60 new keys (splash, login, settings, history, nav) in EN + HI. Fixed a pre-existing parse error (bare ASCII single-quotes around 'क्यों' in two Hindi strings → curly quotes).
+- API: /api/auth/login (upserts User by name+age), /api/auth/logout (no-op symmetric), /api/history (all conversations across profiles with first question + last answer + profile info).
+- UI: SplashScreen (pulsing rings + branding, 2.2s), LoginView (Name + Age form, posts to /api/auth/login, stores user), SettingsView (account card, theme toggle, language toggle, about, clear-local, logout with confirm dialogs), HistoryView (conversation list with profile avatar, first question, last answer preview, time-ago, click → reopen profile chat).
+- MobileNav restructured: 4 global tabs (Home/Memories/History/Settings) on landing/memories/history/settings; 6 profile tabs when in a profile; hidden entirely on splash/login. All labels i18n'd.
+- SiteHeader: simplified to logo + desktop Home/Memories buttons + user avatar→settings. Removed inline theme/language toggles (moved to Settings). Hidden on splash/login.
+- page.tsx: splash (2.2s) → hydrateUser (login if no user, else home) → app shell with header/footer/nav.
+- Fixed ChatPanel crash: Welcome component referenced undefined SUGGESTIONS const → switched to SUGGESTION_KEYS mapped via t(); also i18n'd the placeholder + disclaimer + welcome title/body.
+- Agent Browser verification: splash→login✓, login (Aria/28)→home✓, seed Dr. Aryan on Neon✓, chat RAG grounded answer✓, mobile bottom nav 4 tabs (HI+EN)✓, settings theme toggle✓, settings language toggle✓, logout→login✓, history view shows conversation✓, desktop header nav✓, 0 console errors.
+
+Stage Summary:
+- Neon Postgres is now the production database (all CRUD verified against it).
+- Full app flow: Splash → Login (Name+Age) → Home → preserve/converse with memories → History → Settings (theme/language/logout) → Logout.
+- Bottom nav: Home, Memories, History, Settings (mobile); profile detail shows its own 6 tabs.
+- Both English and Hindi fully supported across all new screens.

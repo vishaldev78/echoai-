@@ -6,6 +6,7 @@ import { Brain, Loader2, Search, Quote } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { api, type Memory, typeColor } from '@/lib/api'
+import { useI18n } from '@/lib/i18n'
 
 const TYPE_ORDER = [
   'fact',
@@ -19,6 +20,7 @@ const TYPE_ORDER = [
 ]
 
 export function MemoriesPanel({ profileId }: { profileId: string }) {
+  const { t } = useI18n()
   const [memories, setMemories] = useState<Memory[] | null>(null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<string | null>(null)
@@ -50,7 +52,7 @@ export function MemoriesPanel({ profileId }: { profileId: string }) {
   if (memories === null) {
     return (
       <div className="flex h-40 items-center justify-center text-muted-foreground">
-        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading memories…
+        <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t('memories.loading')}
       </div>
     )
   }
@@ -60,19 +62,18 @@ export function MemoriesPanel({ profileId }: { profileId: string }) {
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-semibold">
-            <Brain className="h-5 w-5 text-amber-500" /> Extracted memories
+            <Brain className="h-5 w-5 text-amber-500" /> {t('memories.title')}
             <Badge variant="secondary">{memories.length}</Badge>
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Each card is a unit of preserved knowledge or reasoning — the atoms of the digital
-            memory.
+            {t('memories.subtitle')}
           </p>
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Search memories…"
+            placeholder={t('memories.search')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -89,19 +90,19 @@ export function MemoriesPanel({ profileId }: { profileId: string }) {
               : 'border-border/60 text-muted-foreground hover:text-foreground'
           }`}
         >
-          All · {memories.length}
+          {t('memories.all')} · {memories.length}
         </button>
-        {TYPE_ORDER.filter((t) => counts[t]).map((t) => (
+        {TYPE_ORDER.filter((tp) => counts[tp]).map((tp) => (
           <button
-            key={t}
-            onClick={() => setFilter(filter === t ? null : t)}
+            key={tp}
+            onClick={() => setFilter(filter === tp ? null : tp)}
             className={`rounded-full border px-3 py-1 text-xs font-medium capitalize transition-colors ${
-              filter === t
-                ? `${typeColor(t).border} ${typeColor(t).bg} ${typeColor(t).text}`
+              filter === tp
+                ? `${typeColor(tp).border} ${typeColor(tp).bg} ${typeColor(tp).text}`
                 : 'border-border/60 text-muted-foreground hover:text-foreground'
             }`}
           >
-            {t} · {counts[t]}
+            {tp} · {counts[tp]}
           </button>
         ))}
       </div>
@@ -109,7 +110,7 @@ export function MemoriesPanel({ profileId }: { profileId: string }) {
       {filtered.length === 0 ? (
         <Card className="border-dashed border-border/60">
           <CardContent className="py-14 text-center text-sm text-muted-foreground">
-            No memories match. Try a different search or type.
+            {t('memories.empty')}
           </CardContent>
         </Card>
       ) : (

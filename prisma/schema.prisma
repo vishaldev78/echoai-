@@ -1,14 +1,23 @@
 // MNEMOSYNE AI — Digital Memory Layer
-// Prisma schema (SQLite). The data model is provider-agnostic and can be
-// swapped to Neon/Postgres by changing the datasource provider + url.
+// Prisma schema — Neon (PostgreSQL) production database.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+/// App user (simple Name + Age login)
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  age       Int
+  createdAt DateTime @default(now())
+
+  @@unique([name, age])
 }
 
 /// A preserved person / "digital memory" (e.g. Dr. Aryan)

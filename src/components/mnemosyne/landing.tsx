@@ -22,22 +22,24 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useApp } from '@/lib/store'
 import { api } from '@/lib/api'
+import { useI18n } from '@/lib/i18n'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 export function Landing() {
   const { goProfiles, openProfile } = useApp()
+  const { t } = useI18n()
   const [seeding, setSeeding] = useState(false)
 
   async function exploreDemo() {
     setSeeding(true)
-    const t = toast.loading('Awakening Dr. Aryan Rao\'s preserved memory…')
+    const tid = toast.loading(t('toast.demo.loading'))
     try {
       const { profile } = await api.seed()
-      toast.success('Digital memory ready.', { id: t })
+      toast.success(t('toast.demo.ready'), { id: tid })
       openProfile(profile.id, 'overview')
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Failed to seed demo', { id: t })
+      toast.error(e instanceof Error ? e.message : t('toast.demo.fail'), { id: tid })
     } finally {
       setSeeding(false)
     }
@@ -66,20 +68,17 @@ export function Landing() {
               className="mb-6 gap-2 border-amber-500/30 bg-amber-500/10 px-3 py-1 text-amber-600 dark:text-amber-300"
             >
               <Sparkles className="h-3 w-3" />
-              A Digital Memory Layer for Humanity
+              {t('landing.badge')}
             </Badge>
 
             <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              Preserving human intelligence
+              {t('landing.title1')}
               <br />
-              <span className="text-gradient-amber">beyond human lifespan.</span>
+              <span className="text-gradient-amber">{t('landing.title2')}</span>
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg">
-              When a great scientist dies, their reasoning disappears with them — the papers
-              survive, but the <em className="text-foreground/90">why</em> does not. Mnemosyne
-              distills a person&apos;s writings, notes and failures into a living knowledge graph you
-              can converse with, forever.
+              {t('landing.subtitle')}
             </p>
 
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -90,7 +89,7 @@ export function Landing() {
                 className="glow-amber h-12 gap-2 bg-gradient-to-br from-amber-500 to-amber-600 px-7 text-base font-semibold text-amber-950 hover:from-amber-400 hover:to-amber-500"
               >
                 <Brain className="h-5 w-5" />
-                {seeding ? 'Awakening…' : 'Explore Dr. Aryan\'s Memory'}
+                {seeding ? t('landing.cta.demoLoading') : t('landing.cta.demo')}
                 {!seeding && <ArrowRight className="h-4 w-4" />}
               </Button>
               <Button
@@ -100,13 +99,11 @@ export function Landing() {
                 className="h-12 gap-2 px-7 text-base"
               >
                 <Upload className="h-4 w-4" />
-                Preserve a Memory
+                {t('landing.cta.preserve')}
               </Button>
             </div>
 
-            <p className="mt-4 text-xs text-muted-foreground">
-              No signup. Try the live demo of a solid-state battery scientist&apos;s preserved mind.
-            </p>
+            <p className="mt-4 text-xs text-muted-foreground">{t('landing.signup')}</p>
           </motion.div>
 
           {/* stat strip */}
@@ -117,10 +114,10 @@ export function Landing() {
             className="mx-auto mt-16 grid max-w-3xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/60 sm:grid-cols-4"
           >
             {[
-              { k: 'Knowledge', v: 'Extracted' },
-              { k: 'Reasoning', v: 'Preserved' },
-              { k: 'Failures', v: 'First-class' },
-              { k: 'Answers', v: 'Grounded' },
+              { k: t('landing.stat.knowledge'), v: t('landing.stat.extracted') },
+              { k: t('landing.stat.reasoning'), v: t('landing.stat.preserved') },
+              { k: t('landing.stat.failures'), v: t('landing.stat.firstClass') },
+              { k: t('landing.stat.answers'), v: t('landing.stat.grounded') },
             ].map((s) => (
               <div key={s.k} className="bg-background/80 px-4 py-5 text-center backdrop-blur">
                 <div className="text-lg font-semibold text-amber-500">{s.v}</div>
@@ -139,29 +136,21 @@ export function Landing() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose-500">
-                The problem
+                {t('landing.problem.label')}
               </p>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                A scientist publishes 100 papers.
+                {t('landing.problem.title1')}
                 <br />
-                Then dies — and the <span className="text-rose-500">reasoning</span> vanishes.
+                {t('landing.problem.title2')}
               </h2>
               <p className="mt-5 text-base leading-relaxed text-muted-foreground">
-                Human knowledge lives fragmented across papers, emails, notebooks and code. The
-                published record hides a hundred dead ends. After death, nobody knows why a method
-                was chosen, what failures shaped it, or what intuition guided the breakthroughs.
-                Future generations cannot ask a single question.
+                {t('landing.problem.body')}
               </p>
               <div className="mt-6 space-y-2.5">
-                {[
-                  'Information is fragmented across formats',
-                  'Context & decision-making process disappears',
-                  'Failures are never published',
-                  'You cannot ask the dead a question',
-                ].map((t) => (
-                  <div key={t} className="flex items-center gap-3 text-sm">
+                {[1, 2, 3, 4].map((n) => (
+                  <div key={n} className="flex items-center gap-3 text-sm">
                     <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-                    <span className="text-muted-foreground">{t}</span>
+                    <span className="text-muted-foreground">{t(`landing.problem.${n}`)}</span>
                   </div>
                 ))}
               </div>
@@ -170,14 +159,14 @@ export function Landing() {
             <Card className="relative overflow-hidden border-rose-500/20 bg-rose-500/[0.03]">
               <CardContent className="p-6">
                 <div className="mb-4 flex items-center gap-2 text-sm font-medium text-rose-500">
-                  <Quote className="h-4 w-4" /> What survives today
+                  <Quote className="h-4 w-4" /> {t('landing.problem.survives')}
                 </div>
                 <div className="space-y-3">
                   {[
-                    { icon: FileText, label: 'Research_Paper.pdf', note: 'the what' },
-                    { icon: BookOpen, label: 'Experiment_Log.md', note: 'the result' },
-                    { icon: Code2, label: 'repository.git', note: 'the how' },
-                    { icon: AudioLines, label: 'interview.mp3', note: 'the anecdote' },
+                    { icon: FileText, label: 'Research_Paper.pdf', note: t('landing.problem.theWhat') },
+                    { icon: BookOpen, label: 'Experiment_Log.md', note: t('landing.problem.theResult') },
+                    { icon: Code2, label: 'repository.git', note: t('landing.problem.theHow') },
+                    { icon: AudioLines, label: 'interview.mp3', note: t('landing.problem.theAnecdote') },
                   ].map((d) => (
                     <div
                       key={d.label}
@@ -191,7 +180,7 @@ export function Landing() {
                     </div>
                   ))}
                   <div className="!mt-5 rounded-lg border border-dashed border-rose-500/40 bg-rose-500/5 px-3 py-3 text-center text-sm text-rose-600 dark:text-rose-300">
-                    But the <strong>why</strong>? Gone.
+                    {t('landing.problem.whyGone')}
                   </div>
                 </div>
               </CardContent>
@@ -205,45 +194,20 @@ export function Landing() {
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-500">
-              The solution
+              {t('landing.solution.label')}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              From scattered artifacts to a mind you can talk to.
+              {t('landing.solution.title')}
             </h2>
-            <p className="mt-4 text-muted-foreground">
-              Mnemosyne reads everything a person left behind and weaves it into a structured
-              Digital Memory — knowledge units, a reasoning graph, a timeline, and a thinking-style
-              fingerprint. Then it answers questions in their voice, grounded only in what they
-              actually wrote.
-            </p>
+            <p className="mt-4 text-muted-foreground">{t('landing.solution.body')}</p>
           </div>
 
           <div className="mt-14 grid gap-4 md:grid-cols-4">
             {[
-              {
-                icon: Upload,
-                step: '01',
-                title: 'Upload knowledge',
-                desc: 'PDFs, notes, markdown, transcripts, code. The raw footprint of a mind.',
-              },
-              {
-                icon: Sparkles,
-                step: '02',
-                title: 'AI extraction',
-                desc: 'Facts, decisions, discoveries, failures and principles — pulled into structured memory.',
-              },
-              {
-                icon: Network,
-                step: '03',
-                title: 'Memory graph',
-                desc: 'A living graph of how ideas, experiments and outcomes connect and influence each other.',
-              },
-              {
-                icon: MessagesSquare,
-                step: '04',
-                title: 'Ask the memory',
-                desc: 'Converse in their voice. Grounded answers, cited to the exact preserved memory.',
-              },
+              { icon: Upload, step: '01', titleKey: 'landing.solution.1.title', descKey: 'landing.solution.1.desc' },
+              { icon: Sparkles, step: '02', titleKey: 'landing.solution.2.title', descKey: 'landing.solution.2.desc' },
+              { icon: Network, step: '03', titleKey: 'landing.solution.3.title', descKey: 'landing.solution.3.desc' },
+              { icon: MessagesSquare, step: '04', titleKey: 'landing.solution.4.title', descKey: 'landing.solution.4.desc' },
             ].map((s, i) => (
               <motion.div
                 key={s.step}
@@ -260,8 +224,8 @@ export function Landing() {
                       </span>
                       <span className="font-mono text-xs text-muted-foreground">{s.step}</span>
                     </div>
-                    <h3 className="mt-4 text-base font-semibold">{s.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                    <h3 className="mt-4 text-base font-semibold">{t(s.titleKey)}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t(s.descKey)}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -275,51 +239,27 @@ export function Landing() {
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-500">
-              Core capabilities
+              {t('landing.features.label')}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Six layers of a preserved mind.
+              {t('landing.features.title')}
             </h2>
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              {
-                icon: Upload,
-                title: 'Knowledge Upload',
-                desc: 'Ingest PDF, TXT, Markdown and transcripts. Every artifact becomes a source node in the memory.',
-              },
-              {
-                icon: Sparkles,
-                title: 'AI Knowledge Extraction',
-                desc: 'Distills facts, concepts, relationships, decisions and the timeline of a life\'s work.',
-              },
-              {
-                icon: Network,
-                title: 'Memory Graph',
-                desc: 'Person → research → discovery → decision → impact. Navigate the topology of reasoning.',
-              },
-              {
-                icon: MessagesSquare,
-                title: 'Ask The Memory',
-                desc: '“Why did you reject the lithium design?” — answered from the 2028 notes, in their voice.',
-              },
-              {
-                icon: GitBranch,
-                title: 'Thinking Style Model',
-                desc: 'Learns writing voice, problem-solving approach and preferences to channel the person.',
-              },
-              {
-                icon: Clock,
-                title: 'Timeline Memory',
-                desc: 'Every experiment, failure, discovery and publication plotted across the years.',
-              },
+              { icon: Upload, titleKey: 'landing.features.1.title', descKey: 'landing.features.1.desc' },
+              { icon: Sparkles, titleKey: 'landing.features.2.title', descKey: 'landing.features.2.desc' },
+              { icon: Network, titleKey: 'landing.features.3.title', descKey: 'landing.features.3.desc' },
+              { icon: MessagesSquare, titleKey: 'landing.features.4.title', descKey: 'landing.features.4.desc' },
+              { icon: GitBranch, titleKey: 'landing.features.5.title', descKey: 'landing.features.5.desc' },
+              { icon: Clock, titleKey: 'landing.features.6.title', descKey: 'landing.features.6.desc' },
             ].map((f) => (
-              <Card key={f.title} className="border-border/60 transition-colors hover:border-amber-500/30">
+              <Card key={f.titleKey} className="border-border/60 transition-colors hover:border-amber-500/30">
                 <CardContent className="p-6">
                   <f.icon className="h-6 w-6 text-amber-500" />
-                  <h3 className="mt-4 font-semibold">{f.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+                  <h3 className="mt-4 font-semibold">{t(f.titleKey)}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t(f.descKey)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -335,45 +275,29 @@ export function Landing() {
             <CardContent className="relative grid gap-10 p-8 sm:p-12 lg:grid-cols-[1.3fr_1fr] lg:items-center">
               <div>
                 <Badge variant="outline" className="mb-4 gap-1.5 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300">
-                  <FlaskConical className="h-3 w-3" /> Why this is a moonshot
+                  <FlaskConical className="h-3 w-3" /> {t('landing.moonshot.label')}
                 </Badge>
                 <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Current AI stores information.
+                  {t('landing.moonshot.title1')}
                   <br />
-                  Mnemosyne stores <span className="text-gradient-amber">how humans thought.</span>
+                  {t('landing.moonshot.title2')}
                 </h2>
                 <p className="mt-5 max-w-xl leading-relaxed text-muted-foreground">
-                  Imagine an Einstein Memory. A Newton Memory. The memories of every scientist,
-                  doctor, engineer and teacher who shaped our world — queryable, in their own voice,
-                  by anyone who comes after. A collective intelligence network, built one preserved
-                  mind at a time.
+                  {t('landing.moonshot.body')}
                 </p>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {[
-                    'Originality',
-                    'Technical depth',
-                    'Civilization impact',
-                    'Prototype-ready',
-                  ].map((t) => (
-                    <Badge key={t} variant="secondary" className="font-medium">
-                      {t}
-                    </Badge>
-                  ))}
-                </div>
               </div>
 
               <div className="rounded-2xl border border-border/60 bg-background/60 p-6 backdrop-blur">
                 <p className="text-sm italic leading-relaxed text-foreground/90">
-                  &ldquo;Books preserved what humans knew. Mnemosyne preserves how humans
-                  thought.&rdquo;
+                  {t('landing.moonshot.quote')}
                 </p>
                 <p className="mt-4 text-xs uppercase tracking-wider text-muted-foreground">
-                  — The pitch
+                  {t('landing.moonshot.pitch')}
                 </p>
                 <div className="mt-6 border-t border-border/60 pt-5">
                   <Button onClick={exploreDemo} disabled={seeding} className="w-full gap-2">
                     <Brain className="h-4 w-4" />
-                    {seeding ? 'Awakening…' : 'Converse with a preserved mind'}
+                    {seeding ? t('landing.cta.demoLoading') : t('landing.moonshot.cta')}
                   </Button>
                 </div>
               </div>
@@ -387,14 +311,13 @@ export function Landing() {
 
 // Animated "memory constellation" in the hero background.
 // Pure SVG + CSS animations (no framer-motion) so server and client markup
-// are identical — avoids any hydration mismatch.
+// are identical — avoids any hydration mismatch. Coords rounded to 2 decimals
+// so Math.sin produces bit-identical values on Node vs browser V8.
 function Constellation() {
   const seed = 42
   const pts = Array.from({ length: 34 }, (_, i) => {
     const r = Math.sin(seed + i * 12.9898) * 43758.5453
     const r2 = Math.sin(seed + i * 78.233) * 43758.5453
-    // round to 2 decimals so server (Node V8) and client (browser V8) produce
-    // bit-identical attribute strings (Math.sin of large args can differ in last ULP)
     const x = Math.round(((r - Math.floor(r)) * 100) * 100) / 100
     const y = Math.round(((r2 - Math.floor(r2)) * 100) * 100) / 100
     return { x, y }

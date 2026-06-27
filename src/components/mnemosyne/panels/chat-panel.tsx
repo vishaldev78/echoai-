@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { api, type Profile, type Conversation } from '@/lib/api'
+import { useI18n } from '@/lib/i18n'
 import { toast } from 'sonner'
 
 interface UIMessage {
@@ -16,14 +17,15 @@ interface UIMessage {
   sources?: { id: string; title: string; year?: number | null; type: string }[]
 }
 
-const SUGGESTIONS = [
-  'What was your biggest failure?',
-  'Why did you reject the lithium-metal design?',
-  'How would you approach a new battery problem?',
-  'What was your key discovery?',
+const SUGGESTION_KEYS = [
+  'chat.suggest.1',
+  'chat.suggest.2',
+  'chat.suggest.3',
+  'chat.suggest.4',
 ]
 
 export function ChatPanel({ profile }: { profile: Profile }) {
+  const { t } = useI18n()
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<UIMessage[]>([])
   const [input, setInput] = useState('')
@@ -87,7 +89,7 @@ export function ChatPanel({ profile }: { profile: Profile }) {
         },
       ])
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'The memory fell silent.')
+      toast.error(e instanceof Error ? e.message : t('chat.silent'))
       setMessages((m) => m.slice(0, -1))
     } finally {
       setSending(false)
@@ -99,7 +101,7 @@ export function ChatPanel({ profile }: { profile: Profile }) {
     await fetch(`/api/conversations?profileId=${profile.id}`, { method: 'DELETE' })
     setConversation(null)
     setMessages([])
-    toast.success('Conversation cleared.')
+    toast.success(t('chat.cleared'))
   }
 
   return (
@@ -115,13 +117,13 @@ export function ChatPanel({ profile }: { profile: Profile }) {
           <div>
             <p className="text-sm font-semibold leading-none">{profile.name}</p>
             <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-500">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Digital memory active
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> {t('chat.active')}
             </p>
           </div>
         </div>
         {messages.length > 0 && (
           <Button variant="ghost" size="sm" onClick={clearChat} className="gap-1.5 text-muted-foreground">
-            <Trash2 className="h-3.5 w-3.5" /> Clear
+            <Trash2 className="h-3.5 w-3.5" /> {t('chat.clear')}
           </Button>
         )}
       </div>
@@ -130,10 +132,10 @@ export function ChatPanel({ profile }: { profile: Profile }) {
       <div ref={scrollRef} className="flex-1 overflow-y-auto bg-background/40 px-4 py-6">
         {loading ? (
           <div className="flex h-full items-center justify-center text-muted-foreground">
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading conversation…
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {t('chat.loading')}
           </div>
         ) : messages.length === 0 ? (
-          <Welcome name={firstName} field={profile.field} onPick={send} />
+          <Welcome name={firstName} field={profile.field} onPick={send} t={t} />
         ) : (
           <div className="mx-auto max-w-3xl space-y-5">
             <AnimatePresence initial={false}>
@@ -152,7 +154,7 @@ export function ChatPanel({ profile }: { profile: Profile }) {
                           : 'bg-gradient-to-br from-amber-500/25 to-emerald-500/25 text-xs font-semibold text-amber-600 dark:text-amber-300'
                       }
                     >
-                      {m.role === 'user' ? 'You' : initials}
+                      {m.role === 'user' ? (t('nav.home') === 'Home' ? 'You' : 'आप') : initials}
                     </AvatarFallback>
                   </Avatar>
                   <div className={`max-w-[80%] ${m.role === 'user' ? 'items-end' : ''}`}>
@@ -168,7 +170,7 @@ export function ChatPanel({ profile }: { profile: Profile }) {
                     {m.sources && m.sources.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                          Grounded in:
+                          {t('chat.grounded')}
                         </span>
                         {m.sources.map((s, i) => (
                           <span
@@ -217,7 +219,7 @@ export function ChatPanel({ profile }: { profile: Profile }) {
               }
             }}
             rows={1}
-            placeholder={`Ask ${firstName} anything — in their voice…`}
+            placeholder={t('chat.placeholder', { name: firstName })}
             className="max-h-32 flex-1 resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             disabled={sending}
           />
@@ -231,26 +233,36 @@ export function ChatPanel({ profile }: { profile: Profile }) {
           </Button>
         </div>
         <p className="mx-auto mt-1.5 max-w-3xl text-center text-[10px] text-muted-foreground">
-          Answers are grounded only in preserved memories. <CornerDownLeft className="inline h-2.5 w-2.5" /> to send
+          {t('chat.disclaimer')} <CornerDownLeft className="inline h-2.5 w-2.5" /> {t('chat.toSend')}
         </p>
       </div>
     </Card>
   )
 }
 
-function Welcome({ name, field, onPick }: { name: string; field: string; onPick: (q: string) => void }) {
+function Welcome({
+  name,
+  field,
+  onPick,
+  t,
+}: {
+  name: string
+  field: string
+  onPick: (q: string) => void
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  const suggestions = SUGGESTION_KEYS.map((k) => t(k))
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center py-8 text-center">
       <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-500/15 to-emerald-500/15 ring-1 ring-amber-500/25">
         <Brain className="h-7 w-7 text-amber-500" />
       </span>
-      <h3 className="mt-4 text-lg font-semibold">Speak with {name}&apos;s preserved memory</h3>
+      <h3 className="mt-4 text-lg font-semibold">{t('chat.welcome.title', { name })}</h3>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        Ask about their work in {field}. Responses are grounded in what {name} actually wrote —
-        nothing is invented.
+        {t('chat.welcome.body', { field, name })}
       </p>
       <div className="mt-6 grid w-full gap-2 sm:grid-cols-2">
-        {SUGGESTIONS.map((q) => (
+        {suggestions.map((q) => (
           <button
             key={q}
             onClick={() => onPick(q)}

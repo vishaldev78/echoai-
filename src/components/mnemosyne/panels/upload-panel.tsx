@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { api, type Profile, type Document, SOURCE_LABELS } from '@/lib/api'
+import { useI18n } from '@/lib/i18n'
 import { toast } from 'sonner'
 
 const SOURCE_TYPES = [
@@ -24,6 +25,7 @@ export function UploadPanel({
   profile: Profile
   onUploaded: () => void
 }) {
+  const { t } = useI18n()
   const [title, setTitle] = useState('')
   const [sourceType, setSourceType] = useState('note')
   const [content, setContent] = useState('')
@@ -44,9 +46,9 @@ export function UploadPanel({
       setContent(text.slice(0, 16000))
       if (!title) setTitle(file.name.replace(/\.[^.]+$/, ''))
       setSourceType(guessType(file.name))
-      toast.success(`Loaded ${file.name} (${text.length.toLocaleString()} chars)`)
+      toast.success(t('toast.fileLoaded', { name: file.name, count: text.length.toLocaleString() }))
     }
-    reader.onerror = () => toast.error('Could not read file')
+    reader.onerror = () => toast.error(t('toast.fileFail'))
     reader.readAsText(file)
   }
 
@@ -60,22 +62,22 @@ export function UploadPanel({
   async function pasteFromClipboard() {
     try {
       const text = await navigator.clipboard.readText()
-      if (!text) return toast.error('Clipboard is empty')
+      if (!text) return toast.error(t('toast.clipEmpty'))
       setContent(text.slice(0, 16000))
-      toast.success('Pasted from clipboard')
+      toast.success(t('toast.clipPasted'))
     } catch {
-      toast.error('Clipboard access denied')
+      toast.error(t('toast.clipDenied'))
     }
   }
 
   async function submit() {
     if (!title.trim() || !content.trim()) {
-      toast.error('Add a title and some content to preserve.')
+      toast.error(t('upload.error'))
       return
     }
     setBusy(true)
     setStage('extracting')
-    const t = toast.loading('Distilling knowledge with AI…')
+    const tid = toast.loading(t('upload.extractingToast'))
     try {
       const { counts } = await api.uploadDocument({
         profileId: profile.id,
@@ -84,8 +86,8 @@ export function UploadPanel({
         content,
       })
       toast.success(
-        `Preserved ${counts.memories} memories, ${counts.timeline} events, ${counts.nodes} graph nodes.`,
-        { id: t },
+        t('upload.success', { memories: counts.memories, timeline: counts.timeline, nodes: counts.nodes }),
+        { id: tid },
       )
       setTitle('')
       setContent('')
@@ -94,7 +96,7 @@ export function UploadPanel({
       setDocs(documents)
       onUploaded()
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Extraction failed', { id: t })
+      toast.error(e instanceof Error ? e.message : t('toast.extractFail'), { id: tid })
     } finally {
       setBusy(false)
       setStage('idle')
@@ -107,30 +109,29 @@ export function UploadPanel({
         <CardContent className="p-6">
           <div className="flex items-center gap-2">
             <Upload className="h-4 w-4 text-amber-500" />
-            <h2 className="text-lg font-semibold">Upload knowledge</h2>
+            <h2 className="text-lg font-semibold">{t('upload.title')}</h2>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Feed {firstName}&apos;s writings, papers, notes or transcripts. The AI will extract
-            memories, weave the graph and extend the timeline.
+            {t('upload.subtitle', { name: firstName })}
           </p>
 
           <div className="mt-5 space-y-4">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                Document title
+                {t('upload.docTitle')}
               </label>
               <input
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Lab Notebook 2025 — Thermal Failure Analysis"
+                placeholder={t('upload.docTitlePh')}
                 disabled={busy}
               />
             </div>
 
             <div>
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                Source type
+                {t('upload.sourceType')}
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {SOURCE_TYPES.map((s) => (
@@ -153,9 +154,9 @@ export function UploadPanel({
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-xs font-medium text-muted-foreground">
-                  Content{' '}
+                  {t('upload.content')}{' '}
                   <span className="tabular-nums text-muted-foreground/60">
-                    ({content.length.toLocaleString()} / 16,000 chars)
+                    ({content.length.toLocaleString()} / 16,000)
                   </span>
                 </label>
                 <div className="flex gap-1">
@@ -166,7 +167,7 @@ export function UploadPanel({
                     disabled={busy}
                     className="h-7 gap-1 text-xs"
                   >
-                    <ClipboardPaste className="h-3 w-3" /> Paste
+                    <ClipboardPaste className="h-3 w-3" /> {t('upload.paste')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -175,7 +176,7 @@ export function UploadPanel({
                     disabled={busy}
                     className="h-7 gap-1 text-xs"
                   >
-                    <FileUp className="h-3 w-3" /> Open file
+                    <FileUp className="h-3 w-3" /> {t('upload.openFile')}
                   </Button>
                   <input
                     ref={fileRef}
@@ -193,7 +194,7 @@ export function UploadPanel({
                 className="h-56 w-full resize-y rounded-md border border-input bg-background px-3 py-2.5 font-mono text-xs leading-relaxed outline-none focus:ring-2 focus:ring-ring"
                 value={content}
                 onChange={(e) => setContent(e.target.value.slice(0, 16000))}
-                placeholder="Paste a paper, notebook entry, journal, transcript or code here. The richer the reasoning, the richer the memory."
+                placeholder={t('upload.contentPh')}
                 disabled={busy}
               />
             </div>
@@ -206,12 +207,12 @@ export function UploadPanel({
               {busy ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  {stage === 'extracting' ? 'Distilling knowledge…' : 'Preserving…'}
+                  {stage === 'extracting' ? t('upload.distilling') : t('upload.preserving')}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 text-amber-500" />
-                  Preserve &amp; extract
+                  {t('upload.preserve')}
                 </>
               )}
             </Button>
@@ -223,17 +224,15 @@ export function UploadPanel({
         <Card className="border-amber-500/20 bg-amber-500/[0.03]">
           <CardContent className="p-5">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="h-4 w-4 text-amber-500" /> What the AI extracts
+              <Sparkles className="h-4 w-4 text-amber-500" /> {t('upload.whatExtracts')}
             </h3>
             <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
               {[
-                'Facts, concepts & principles',
-                'Decisions and the reasoning behind them',
-                'Discoveries and their root cause',
-                'Failures — first-class citizens',
-                'Timeline events with years',
-                'Graph nodes & relationships',
-                'Thinking-style fingerprint',
+                t('landing.features.2.title'),
+                t('profile.fingerprint'),
+                t('landing.stat.failures'),
+                t('profile.tab.timeline'),
+                t('profile.tab.graph'),
               ].map((x) => (
                 <li key={x} className="flex items-start gap-2">
                   <Check className="mt-0.5 h-3 w-3 shrink-0 text-emerald-500" />
@@ -247,7 +246,7 @@ export function UploadPanel({
         <Card className="border-border/60">
           <CardContent className="p-5">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <FileText className="h-4 w-4 text-amber-500" /> Source documents
+              <FileText className="h-4 w-4 text-amber-500" /> {t('upload.sourceDocs')}
               <Badge variant="secondary" className="ml-auto">
                 {docs?.length ?? 0}
               </Badge>
@@ -257,7 +256,7 @@ export function UploadPanel({
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               ) : docs.length === 0 ? (
                 <p className="py-6 text-center text-xs text-muted-foreground">
-                  No documents uploaded yet.
+                  {t('upload.noDocs')}
                 </p>
               ) : (
                 docs.map((d) => (

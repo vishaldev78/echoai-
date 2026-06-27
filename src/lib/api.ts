@@ -112,6 +112,30 @@ export const api = {
     ),
 
   seed: () => jfetch<{ profile: Profile; seeded: boolean }>('/api/seed', { method: 'POST' }),
+
+  // auth
+  login: (data: { name: string; age: number }) =>
+    jfetch<{ user: { id: string; name: string; age: number } }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  logout: () => jfetch<{ ok: boolean }>('/api/auth/logout', { method: 'POST' }),
+
+  // history
+  getHistory: () =>
+    jfetch<{
+      conversations: {
+        id: string
+        profileId: string
+        profileName: string
+        profileTitle: string
+        profileField: string
+        messageCount: number
+        firstQuestion: string
+        lastAnswer: string
+        createdAt: string
+      }[]
+    }>('/api/history'),
 }
 
 // Color tokens for memory types / node types — NO indigo or blue.
