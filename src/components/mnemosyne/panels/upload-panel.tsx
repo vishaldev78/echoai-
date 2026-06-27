@@ -123,16 +123,21 @@ export function UploadPanel({
     setStage('extracting')
     const tid = toast.loading(t('upload.extractingToast'))
     try {
-      const { counts } = await api.uploadDocument({
+      const res = await api.uploadDocument({
         profileId: profile.id,
         title: title.trim(),
         sourceType,
         content,
       })
-      toast.success(
-        t('upload.success', { memories: counts.memories, timeline: counts.timeline, nodes: counts.nodes }),
-        { id: tid },
-      )
+      if (res.warning) {
+        // Document saved but AI extraction failed (e.g. z-ai SDK not configured locally)
+        toast.warning(res.warning, { id: tid, duration: 6000 })
+      } else {
+        toast.success(
+          t('upload.success', { memories: res.counts.memories, timeline: res.counts.timeline, nodes: res.counts.nodes }),
+          { id: tid },
+        )
+      }
       setTitle('')
       setContent('')
       if (fileRef.current) fileRef.current.value = ''

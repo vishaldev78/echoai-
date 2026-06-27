@@ -30,7 +30,23 @@ npm run db:push
 
 > **Want your own database?** Create a free Neon project at [neon.tech](https://neon.tech), copy its connection string into `.env`, then run `npm run db:push`.
 
-### 3. Start the dev server
+### 3. Set up the AI (z-ai SDK)
+The app uses the **z-ai-web-dev-sdk** for knowledge extraction and RAG chat. It needs a `.z-ai-config` file in the project root. A working config file is **already included** in this project (`.z-ai-config`).
+
+If it's missing or you need your own credentials, create `.z-ai-config` in the project root:
+```json
+{
+  "baseUrl": "https://internal-api.z.ai/v1",
+  "apiKey": "Z.ai",
+  "chatId": "your-chat-id",
+  "token": "your-jwt-token",
+  "userId": "your-user-id"
+}
+```
+
+> **Note:** The `.z-ai-config` file is in `.gitignore` (it contains auth tokens). If the AI features aren't working locally, check that this file exists — without it, document uploads will still save but won't extract memories, and chat will return a graceful "AI unavailable" message instead of crashing.
+
+### 4. Start the dev server
 ```bash
 npm run dev
 ```

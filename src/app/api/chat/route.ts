@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   // verify ownership of the profile
-  const owned = await db.profile.findFirst({ where: { id: profileId, ownerId }, select: { id: true } })
+  const owned = await db.profile.findFirst({ where: { id: profileId, ownerId }, select: { id: true, name: true } })
   if (!owned) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
   // find or create conversation (must belong to this profile)
@@ -32,23 +32,42 @@ export async function POST(req: NextRequest) {
     take: 16,
   })
 
-  const { answer, sources } = await chatWithMemory({
-    profileId,
-    question: String(question),
-    history: prior.map((m) => ({ role: m.role, content: m.content })),
+  // Save the user's question immediately so it's never lost.
+  await db.message.create({
+    data: { conversationId: conv.id, role: 'user', content: String(question), sources: '' },
   })
 
-  await db.message.createMany({
-    data: [
-      { conversationId: conv.id, role: 'user', content: String(question), sources: '' },
-      {
+  try {
+    const { answer, sources } = await chatWithMemory({
+      profileId,
+      question: String(question),
+      history: prior.map((m) => ({ role: m.role, content: m.content })),
+    })
+
+    await db.message.create({
+      data: {
         conversationId: conv.id,
         role: 'assistant',
         content: answer,
         sources: sources.map((s) => s.id).join(','),
       },
-    ],
-  })
+    })
 
-  return NextResponse.json({ conversationId: conv.id, answer, sources })
+    return NextResponse.json({ conversationId: conv.id, answer, sources })
+  } catch (err) {
+    // AI unavailable (e.g. z-ai SDK not configured locally). Return a graceful
+    // message instead of crashing, and persist it so the conversation history
+    // stays consistent.
+    const message = err instanceof Error ? err.message : 'AI unavailable'
+    const fallback =
+      message.includes('z-ai-config')
+        ? `I'm unable to connect to the AI service right now. To enable chat locally, create a .z-ai-config file in the project root with your z.ai credentials. Your question has been saved.`
+        : `I couldn't generate a response right now (${message}). Your question has been saved — please try again later.`
+
+    await db.message.create({
+      data: { conversationId: conv.id, role: 'assistant', content: fallback, sources: '' },
+    })
+
+    return NextResponse.json({ conversationId: conv.id, answer: fallback, sources: [] })
+  }
 }

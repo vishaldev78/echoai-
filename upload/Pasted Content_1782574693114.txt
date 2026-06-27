@@ -1,0 +1,445 @@
+import ZAI from 'z-ai-web-dev-sdk'
+import { db } from '@/lib/db'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Types returned by the LLM knowledge-extraction pass
+// ─────────────────────────────────────────────────────────────────────────────
+export interface ExtractedMemory {
+  type: string
+  title: string
+  content: string
+  year?: number | null
+  keywords: string
+}
+export interface ExtractedTimelineEvent {
+  year: number
+  title: string
+  description: string
+  type: string
+}
+export interface ExtractedGraphNode {
+  label: string
+  type: string
+}
+export interface ExtractedGraphEdge {
+  source: string
+  target: string
+  relationship: string
+}
+export interface ExtractedThinkingStyle {
+  writingStyle: string
+  problemSolving: string
+  preferences: string
+  summary: string
+}
+export interface ExtractionResult {
+  memories: ExtractedMemory[]
+  timelineEvents: ExtractedTimelineEvent[]
+  graphNodes: ExtractedGraphNode[]
+  graphEdges: ExtractedGraphEdge[]
+  thinkingStyle: ExtractedThinkingStyle | null
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Singleton SDK instance (reuse across requests)
+// ─────────────────────────────────────────────────────────────────────────────
+let zaiPromise: Promise<ZAI> | null = null
+async function getZAI(): Promise<ZAI> {
+  if (!zaiPromise) zaiPromise = ZAI.create()
+  return zaiPromise
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Robust JSON extraction from an LLM response
+// ─────────────────────────────────────────────────────────────────────────────
+function extractJson(text: string): unknown {
+  if (!text) throw new Error('empty LLM response')
+  // strip code fences
+  let t = text.trim()
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  if (fence) t = fence[1].trim()
+  // find outermost braces
+  const start = t.indexOf('{')
+  const end = t.lastIndexOf('}')
+  if (start !== -1 && end !== -1 && end > start) t = t.slice(start, end + 1)
+  return JSON.parse(t)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KNOWLEDGE EXTRACTION
+// Feeds raw document text to the LLM and asks for a structured Digital Memory.
+// ─────────────────────────────────────────────────────────────────────────────
+export async function extractKnowledge(opts: {
+  profileName: string
+  profileTitle: string
+  profileField: string
+  documentTitle: string
+  documentText: string
+}): Promise<ExtractionResult> {
+  const zai = await getZAI()
+
+  const system = `You are ECHO, an engine that distills a person's raw knowledge artifacts (papers, notes, journals, transcripts, code) into a structured Digital Memory that future generations can converse with.
+
+You extract:
+- discrete MEMORIES (facts, decisions, discoveries, failures, concepts, experiments, quotes, principles)
+- a TIMELINE of dated milestones
+- a KNOWLEDGE GRAPH of how ideas, experiments and outcomes relate
+- a THINKING STYLE fingerprint (how this person writes, reasons and chooses)
+
+You ALWAYS respond with ONE valid JSON object and absolutely nothing else — no prose, no markdown outside the JSON.`
+
+  const truncated = opts.documentText.slice(0, 14000)
+
+  const user = `PERSON: ${opts.profileName} — ${opts.profileTitle} (${opts.profileField})
+SOURCE DOCUMENT: ${opts.documentTitle}
+
+DOCUMENT TEXT:
+"""
+${truncated}
+"""
+
+Distill the above into a Digital Memory. Respond with this exact JSON shape:
+{
+  "memories": [
+    { "type": "fact|decision|discovery|failure|concept|experiment|quote|principle",
+      "title": "short label",
+      "content": "1-3 sentence preserved knowledge with reasoning/context",
+      "year": 2031,
+      "keywords": "comma,separated,lowercase,keywords" }
+  ],
+  "timelineEvents": [
+    { "year": 2031, "title": "short", "description": "1-2 sentences",
+      "type": "experiment|discovery|publication|decision|failure|milestone" }
+  ],
+  "graphNodes": [
+    { "label": "unique short label", "type": "person|research|discovery|decision|experiment|impact|field|method" }
+  ],
+  "graphEdges": [
+    { "source": "exact node label", "target": "exact node label",
+      "relationship": "led_to|part_of|caused|rejected|discovered|used|influenced" }
+  ],
+  "thinkingStyle": {
+    "writingStyle": "1 sentence on their writing voice",
+    "problemSolving": "1 sentence on how they approach problems",
+    "preferences": "1 sentence on preferred methods/instincts",
+    "summary": "2 sentence cognitive fingerprint"
+  }
+}
+
+Rules:
+- Produce 4-10 memories, 3-7 timeline events, 5-12 graph nodes, 4-12 edges.
+- Always include a "person" graph node labeled with the person's name and a "field" node for their field.
+- Edge source/target MUST exactly match a node label you emitted.
+- Use real years inferred from the text; if unknown omit the year on memories.
+- Be specific and grounded in the document — never invent facts. Quote distinctive phrasing for "quote" memories.
+- JSON only.`
+
+  const completion = await zai.chat.completions.create({
+    messages: [
+      { role: 'assistant', content: system },
+      { role: 'user', content: user },
+    ],
+    thinking: { type: 'disabled' },
+  })
+
+  const raw = completion.choices[0]?.message?.content ?? ''
+  const parsed = extractJson(raw) as Partial<ExtractionResult>
+
+  const safe: ExtractionResult = {
+    memories: Array.isArray(parsed.memories) ? parsed.memories.filter(Boolean) : [],
+    timelineEvents: Array.isArray(parsed.timelineEvents) ? parsed.timelineEvents.filter(Boolean) : [],
+    graphNodes: Array.isArray(parsed.graphNodes) ? parsed.graphNodes.filter(Boolean) : [],
+    graphEdges: Array.isArray(parsed.graphEdges) ? parsed.graphEdges.filter(Boolean) : [],
+    thinkingStyle: parsed.thinkingStyle && typeof parsed.thinkingStyle === 'object' ? parsed.thinkingStyle : null,
+  }
+
+  // Guarantee person + field nodes exist
+  const labels = new Set(safe.graphNodes.map((n) => n.label))
+  if (!labels.has(opts.profileName)) {
+    safe.graphNodes.unshift({ label: opts.profileName, type: 'person' })
+  }
+  if (!labels.has(opts.profileField)) {
+    safe.graphNodes.push({ label: opts.profileField, type: 'field' })
+  }
+  // connect person -> field if no edge yet
+  const hasPersonField = safe.graphEdges.some(
+    (e) =>
+      (e.source === opts.profileName && e.target === opts.profileField) ||
+      (e.source === opts.profileField && e.target === opts.profileName),
+  )
+  if (!hasPersonField) {
+    safe.graphEdges.push({ source: opts.profileName, target: opts.profileField, relationship: 'part_of' })
+  }
+
+  return safe
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LIGHTWEIGHT RETRIEVAL (keyword-overlap scoring — no external vector DB needed)
+// ─────────────────────────────────────────────────────────────────────────────
+function tokenize(s: string): string[] {
+  return (s.toLowerCase().match(/[a-z0-9]{2,}/g) ?? []).filter(
+    (w) => !STOP.has(w) && w.length > 2,
+  )
+}
+const STOP = new Set([
+  'the','and','for','that','this','with','from','your','you','what','why','how',
+  'was','were','are','did','does','have','had','they','their','them','his','her',
+  'she','him','his','about','into','than','then','when','which','who','whom',
+  'not','but','but','are','can','could','would','should','will','there','here',
+])
+
+export function retrieveMemories(question: string, memories: { id: string; title: string; content: string; keywords: string }[], k = 6) {
+  const qTokens = new Set(tokenize(question))
+  if (qTokens.size === 0) return memories.slice(0, k)
+  const scored = memories.map((m) => {
+    const hay = tokenize(`${m.title} ${m.content} ${m.keywords}`)
+    const counts = new Map<string, number>()
+    for (const t of hay) counts.set(t, (counts.get(t) ?? 0) + 1)
+    let score = 0
+    for (const t of qTokens) score += counts.get(t) ?? 0
+    // small boost for keyword exact matches
+    const kws = m.keywords.toLowerCase().split(',').map((s) => s.trim()).filter(Boolean)
+    for (const k of kws) if (qTokens.has(k)) score += 3
+    return { m, score }
+  })
+  scored.sort((a, b) => b.score - a.score)
+  return scored.filter((s) => s.score > 0).slice(0, k).map((s) => s.m)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHAT WITH THE MEMORY (RAG)
+// ─────────────────────────────────────────────────────────────────────────────
+export async function chatWithMemory(opts: {
+  profileId: string
+  question: string
+  history: { role: string; content: string }[]
+}): Promise<{ answer: string; sources: { id: string; title: string; year?: number | null; type: string }[] }> {
+  const zai = await getZAI()
+
+  const profile = await db.profile.findUnique({
+    where: { id: opts.profileId },
+    include: {
+      memories: true,
+      thinkingStyle: true,
+    },
+  })
+  if (!profile) throw new Error('Profile not found')
+
+  const retrieved = retrieveMemories(opts.question, profile.memories)
+  const sources = retrieved.map((m) => ({ id: m.id, title: m.title, year: m.year, type: m.type }))
+
+  const contextBlock = retrieved.length
+    ? retrieved
+        .map((m, i) => `[${i + 1}] (${m.year ?? 'undated'}) ${m.type.toUpperCase()} — ${m.title}\n${m.content}`)
+        .join('\n\n')
+    : '(no directly matching preserved memories were found)'
+
+  const ts = profile.thinkingStyle
+  const voiceBlock = ts
+    ? `THINKING STYLE FINGERPRINT:
+- Writing voice: ${ts.writingStyle}
+- Problem solving: ${ts.problemSolving}
+- Preferences/instincts: ${ts.preferences}
+- Cognitive summary: ${ts.summary}`
+    : ''
+
+  const system = `You are the DIGITAL MEMORY of ${profile.name}, a ${profile.title} in ${profile.field}.
+${profile.bio}
+
+You answer questions AS this person — in first person, channeling their preserved voice and reasoning. You are grounded ONLY in the preserved memories supplied below. When you draw on a memory, cite it naturally like "According to my 2031 journal..." or reference the [n] markers.
+
+${voiceBlock}
+
+PRESERVED MEMORIES (retrieved for this question):
+${contextBlock}
+
+Rules:
+- Stay in character. Be specific and grounded. Quote distinctive phrasing when relevant.
+- If the preserved memories do not contain the answer, say so honestly rather than inventing — the entire point of ECHO is that nothing is fabricated.
+- Keep answers concise (2-5 sentences) unless the question asks for depth.
+- Never break character or mention that you are an AI or a language model.`
+
+  const messages = [
+    { role: 'assistant', content: system },
+    ...opts.history.slice(-8).map((h) => ({ role: h.role, content: h.content })),
+    { role: 'user', content: opts.question },
+  ]
+
+  const completion = await zai.chat.completions.create({
+    messages,
+    thinking: { type: 'disabled' },
+  })
+
+  const answer = completion.choices[0]?.message?.content?.trim() ?? '(silence)'
+  return { answer, sources }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THINKING-STYLE MODEL BUILDER (used during seeding when no style exists)
+// ─────────────────────────────────────────────────────────────────────────────
+export async function buildThinkingStyle(profile: {
+  id: string
+  name: string
+  title: string
+  field: string
+  bio: string
+}): Promise<ExtractedThinkingStyle | null> {
+  const zai = await getZAI()
+  const docs = await db.document.findMany({
+    where: { profileId: profile.id },
+    select: { content: true },
+    take: 8,
+  })
+  const corpus = docs.map((d) => d.content).join('\n\n').slice(0, 12000)
+  if (corpus.trim().length < 80) return null
+
+  const completion = await zai.chat.completions.create({
+    messages: [
+      {
+        role: 'assistant',
+        content:
+          'You are ECHO. You build a cognitive fingerprint of a person from their preserved writings. Respond with ONE valid JSON object only.',
+      },
+      {
+        role: 'user',
+        content: `PERSON: ${profile.name} — ${profile.title} (${profile.field})
+BIO: ${profile.bio}
+
+WRITINGS:
+"""
+${corpus}
+"""
+
+Produce a thinking-style fingerprint as JSON:
+{ "writingStyle": "1 sentence", "problemSolving": "1 sentence", "preferences": "1 sentence", "summary": "2 sentences" }
+JSON only.`,
+      },
+    ],
+    thinking: { type: 'disabled' },
+  })
+
+  const raw = completion.choices[0]?.message?.content ?? ''
+  try {
+    return extractJson(raw) as ExtractedThinkingStyle
+  } catch {
+    return null
+  }
+}
+............." = "aggr_selection_0_Memory"."profileId") LEFT JOIN (SELECT "public"."Document"."profileId", COUNT(*) AS "_aggr_count_documents" FROM "public"."Document" WHERE 1=1 GROUP BY "public"."Document"."profileId") AS "aggr_selection_1_Document" ON ("public"."Profile"."id" = "aggr_selection_1_Document"."profileId") LEFT JOIN (SELECT "public"."TimelineEvent"."profileId", COUNT(*) AS "_aggr_count_timelineEvents" FROM "public"."TimelineEvent" WHERE 1=1 GROUP BY "public"."TimelineEvent"."profileId") AS "aggr_selection_2_TimelineEvent" ON ("public"."Profile"."id" = "aggr_selection_2_TimelineEvent"."profileId") LEFT JOIN (SELECT "public"."Conversation"."profileId", COUNT(*) AS "_aggr_count_conversations" FROM "public"."Conversation" WHERE 1=1 GROUP BY "public"."Conversation"."profileId") AS "aggr_selection_3_Conversation" ON ("public"."Profile"."id" = "aggr_selection_3_Conversation"."profileId") WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ThinkingStyle"."id", "public"."ThinkingStyle"."profileId", "public"."ThinkingStyle"."writingStyle", "public"."ThinkingStyle"."problemSolving", "public"."ThinkingStyle"."preferences", "public"."ThinkingStyle"."summary" FROM "public"."ThinkingStyle" WHERE "public"."ThinkingStyle"."profileId" IN ($1) OFFSET $2
+ GET /api/profiles/cmqwihozq0002i9pc8yzdnmbq 200 in 2.3s (compile: 1261ms, render: 1056ms)
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."TimelineEvent"."id", "public"."TimelineEvent"."profileId", "public"."TimelineEvent"."year", "public"."TimelineEvent"."title", "public"."TimelineEvent"."description", "public"."TimelineEvent"."type", "public"."TimelineEvent"."memoryId" FROM "public"."TimelineEvent" WHERE "public"."TimelineEvent"."profileId" = $1 ORDER BY "public"."TimelineEvent"."year" ASC OFFSET $2
+ GET /api/timeline?profileId=cmqwihozq0002i9pc8yzdnmbq 200 in 1291ms (compile: 183ms, render: 1108ms)
+prisma:query SELECT "public"."Memory"."id", "public"."Memory"."profileId", "public"."Memory"."documentId", "public"."Memory"."type", "public"."Memory"."title", "public"."Memory"."content", "public"."Memory"."year", "public"."Memory"."keywords", "public"."Memory"."createdAt" FROM "public"."Memory" WHERE "public"."Memory"."profileId" = $1 ORDER BY "public"."Memory"."year" ASC, "public"."Memory"."createdAt" DESC OFFSET $2
+ GET /api/memories?profileId=cmqwihozq0002i9pc8yzdnmbq 200 in 1298ms (compile: 235ms, render: 1063ms)
+prisma:query SELECT "public"."GraphNode"."id", "public"."GraphNode"."profileId", "public"."GraphNode"."label", "public"."GraphNode"."type", "public"."GraphNode"."memoryId" FROM "public"."GraphNode" WHERE "public"."GraphNode"."profileId" = $1 OFFSET $2
+prisma:query SELECT "public"."GraphEdge"."id", "public"."GraphEdge"."profileId", "public"."GraphEdge"."source", "public"."GraphEdge"."target", "public"."GraphEdge"."relationship" FROM "public"."GraphEdge" WHERE "public"."GraphEdge"."profileId" = $1 OFFSET $2
+ GET /api/graph?profileId=cmqwihozq0002i9pc8yzdnmbq 200 in 1365ms (compile: 281ms, render: 1083ms)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."ownerId", "public"."Profile"."name", "public"."Profile"."title", "public"."Profile"."field", "public"."Profile"."bio", "public"."Profile"."birthYear", "public"."Profile"."deathYear", "public"."Profile"."avatarColor", "public"."Profile"."accent", "public"."Profile"."createdAt", "public"."Profile"."updatedAt", COALESCE("aggr_selection_0_Memory"."_aggr_count_memories", 0) AS "_aggr_count_memories", COALESCE("aggr_selection_1_Document"."_aggr_count_documents", 0) AS "_aggr_count_documents", COALESCE("aggr_selection_2_TimelineEvent"."_aggr_count_timelineEvents", 0) AS "_aggr_count_timelineEvents" FROM "public"."Profile" LEFT JOIN (SELECT "public"."Memory"."profileId", COUNT(*) AS "_aggr_count_memories" FROM "public"."Memory" WHERE 1=1 GROUP BY "public"."Memory"."profileId") AS "aggr_selection_0_Memory" ON ("public"."Profile"."id" = "aggr_selection_0_Memory"."profileId") LEFT JOIN (SELECT "public"."Document"."profileId", COUNT(*) AS "_aggr_count_documents" FROM "public"."Document" WHERE 1=1 GROUP BY "public"."Document"."profileId") AS "aggr_selection_1_Document" ON ("public"."Profile"."id" = "aggr_selection_1_Document"."profileId") LEFT JOIN (SELECT "public"."TimelineEvent"."profileId", COUNT(*) AS "_aggr_count_timelineEvents" FROM "public"."TimelineEvent" WHERE 1=1 GROUP BY "public"."TimelineEvent"."profileId") AS "aggr_selection_2_TimelineEvent" ON ("public"."Profile"."id" = "aggr_selection_2_TimelineEvent"."profileId") WHERE "public"."Profile"."ownerId" = $1 ORDER BY "public"."Profile"."createdAt" DESC OFFSET $2
+ GET /api/profiles 200 in 814ms (compile: 6ms, render: 808ms)
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Profile" ("id","ownerId","name","title","field","bio","birthYear","deathYear","avatarColor","accent","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING "public"."Profile"."id", "public"."Profile"."ownerId", "public"."Profile"."name", "public"."Profile"."title", "public"."Profile"."field", "public"."Profile"."bio", "public"."Profile"."birthYear", "public"."Profile"."deathYear", "public"."Profile"."avatarColor", "public"."Profile"."accent", "public"."Profile"."createdAt", "public"."Profile"."updatedAt"
+ POST /api/profiles 200 in 2.2s (compile: 5ms, render: 2.2s)
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."ownerId", "public"."Profile"."name", "public"."Profile"."title", "public"."Profile"."field", "public"."Profile"."bio", "public"."Profile"."birthYear", "public"."Profile"."deathYear", "public"."Profile"."avatarColor", "public"."Profile"."accent", "public"."Profile"."createdAt", "public"."Profile"."updatedAt", COALESCE("aggr_selection_0_Memory"."_aggr_count_memories", 0) AS "_aggr_count_memories", COALESCE("aggr_selection_1_Document"."_aggr_count_documents", 0) AS "_aggr_count_documents", COALESCE("aggr_selection_2_TimelineEvent"."_aggr_count_timelineEvents", 0) AS "_aggr_count_timelineEvents", COALESCE("aggr_selection_3_Conversation"."_aggr_count_conversations", 0) AS "_aggr_count_conversations" FROM "public"."Profile" LEFT JOIN (SELECT "public"."Memory"."profileId", COUNT(*) AS "_aggr_count_memories" FROM "public"."Memory" WHERE 1=1 GROUP BY "public"."Memory"."profileId") AS "aggr_selection_0_Memory" ON ("public"."Profile"."id" = "aggr_selection_0_Memory"."profileId") LEFT JOIN (SELECT "public"."Document"."profileId", COUNT(*) AS "_aggr_count_documents" FROM "public"."Document" WHERE 1=1 GROUP BY "public"."Document"."profileId") AS "aggr_selection_1_Document" ON ("public"."Profile"."id" = "aggr_selection_1_Document"."profileId") LEFT JOIN (SELECT "public"."TimelineEvent"."profileId", COUNT(*) AS "_aggr_count_timelineEvents" FROM "public"."TimelineEvent" WHERE 1=1 GROUP BY "public"."TimelineEvent"."profileId") AS "aggr_selection_2_TimelineEvent" ON ("public"."Profile"."id" = "aggr_selection_2_TimelineEvent"."profileId") LEFT JOIN (SELECT "public"."Conversation"."profileId", COUNT(*) AS "_aggr_count_conversations" FROM "public"."Conversation" WHERE 1=1 GROUP BY "public"."Conversation"."profileId") AS "aggr_selection_3_Conversation" ON ("public"."Profile"."id" = "aggr_selection_3_Conversation"."profileId") WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."ThinkingStyle"."id", "public"."ThinkingStyle"."profileId", "public"."ThinkingStyle"."writingStyle", "public"."ThinkingStyle"."problemSolving", "public"."ThinkingStyle"."preferences", "public"."ThinkingStyle"."summary" FROM "public"."ThinkingStyle" WHERE "public"."ThinkingStyle"."profileId" IN ($1) OFFSET $2
+ GET /api/profiles/cmqwikqhu0023i9pc4brrtsns 200 in 3.6s (compile: 13ms, render: 3.6s)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT 1
+prisma:query SELECT "public"."Memory"."id", "public"."Memory"."profileId", "public"."Memory"."documentId", "public"."Memory"."type", "public"."Memory"."title", "public"."Memory"."content", "public"."Memory"."year", "public"."Memory"."keywords", "public"."Memory"."createdAt" FROM "public"."Memory" WHERE "public"."Memory"."profileId" = $1 ORDER BY "public"."Memory"."year" ASC, "public"."Memory"."createdAt" DESC OFFSET $2
+ GET /api/memories?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 1320ms (compile: 7ms, render: 1313ms)
+prisma:query SELECT "public"."TimelineEvent"."id", "public"."TimelineEvent"."profileId", "public"."TimelineEvent"."year", "public"."TimelineEvent"."title", "public"."TimelineEvent"."description", "public"."TimelineEvent"."type", "public"."TimelineEvent"."memoryId" FROM "public"."TimelineEvent" WHERE "public"."TimelineEvent"."profileId" = $1 ORDER BY "public"."TimelineEvent"."year" ASC OFFSET $2
+ GET /api/timeline?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 1338ms (compile: 16ms, render: 1322ms)
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."GraphEdge"."id", "public"."GraphEdge"."profileId", "public"."GraphEdge"."source", "public"."GraphEdge"."target", "public"."GraphEdge"."relationship" FROM "public"."GraphEdge" WHERE "public"."GraphEdge"."profileId" = $1 OFFSET $2
+prisma:query SELECT "public"."GraphNode"."id", "public"."GraphNode"."profileId", "public"."GraphNode"."label", "public"."GraphNode"."type", "public"."GraphNode"."memoryId" FROM "public"."GraphNode" WHERE "public"."GraphNode"."profileId" = $1 OFFSET $2
+ GET /api/graph?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 2.2s (compile: 26ms, render: 2.1s)
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Document"."id", "public"."Document"."profileId", "public"."Document"."title", "public"."Document"."sourceType", "public"."Document"."content", "public"."Document"."charCount", "public"."Document"."createdAt" FROM "public"."Document" WHERE "public"."Document"."profileId" = $1 ORDER BY "public"."Document"."createdAt" DESC OFFSET $2
+ GET /api/documents?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 1943ms (compile: 185ms, render: 1758ms)
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT 1
+prisma:query SELECT "public"."GraphEdge"."id", "public"."GraphEdge"."profileId", "public"."GraphEdge"."source", "public"."GraphEdge"."target", "public"."GraphEdge"."relationship" FROM "public"."GraphEdge" WHERE "public"."GraphEdge"."profileId" = $1 OFFSET $2
+prisma:query SELECT "public"."Memory"."id", "public"."Memory"."profileId", "public"."Memory"."documentId", "public"."Memory"."type", "public"."Memory"."title", "public"."Memory"."content", "public"."Memory"."year", "public"."Memory"."keywords", "public"."Memory"."createdAt" FROM "public"."Memory" WHERE "public"."Memory"."profileId" = $1 ORDER BY "public"."Memory"."year" ASC, "public"."Memory"."createdAt" DESC OFFSET $2
+ GET /api/memories?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 1548ms (compile: 5ms, render: 1544ms)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."GraphNode"."id", "public"."GraphNode"."profileId", "public"."GraphNode"."label", "public"."GraphNode"."type", "public"."GraphNode"."memoryId" FROM "public"."GraphNode" WHERE "public"."GraphNode"."profileId" = $1 OFFSET $2
+ GET /api/graph?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 1202ms (compile: 5ms, render: 1197ms)
+prisma:query SELECT "public"."TimelineEvent"."id", "public"."TimelineEvent"."profileId", "public"."TimelineEvent"."year", "public"."TimelineEvent"."title", "public"."TimelineEvent"."description", "public"."TimelineEvent"."type", "public"."TimelineEvent"."memoryId" FROM "public"."TimelineEvent" WHERE "public"."TimelineEvent"."profileId" = $1 ORDER BY "public"."TimelineEvent"."year" ASC OFFSET $2
+ GET /api/timeline?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 805ms (compile: 6ms, render: 799ms)
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."Conversation"."id", "public"."Conversation"."profileId", "public"."Conversation"."createdAt" FROM "public"."Conversation" WHERE "public"."Conversation"."profileId" = $1 ORDER BY "public"."Conversation"."createdAt" DESC LIMIT $2 OFFSET $3
+ GET /api/conversations?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 935ms (compile: 123ms, render: 812ms)
+prisma:query SELECT "public"."Document"."id", "public"."Document"."profileId", "public"."Document"."title", "public"."Document"."sourceType", "public"."Document"."content", "public"."Document"."charCount", "public"."Document"."createdAt" FROM "public"."Document" WHERE "public"."Document"."profileId" = $1 ORDER BY "public"."Document"."createdAt" DESC OFFSET $2
+ GET /api/documents?profileId=cmqwikqhu0023i9pc4brrtsns 200 in 820ms (compile: 5ms, render: 815ms)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query INSERT INTO "public"."Document" ("id","profileId","title","sourceType","content","charCount","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "public"."Document"."id", "public"."Document"."profileId", "public"."Document"."title", "public"."Document"."sourceType", "public"."Document"."content", "public"."Document"."charCount", "public"."Document"."createdAt"
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."ownerId", "public"."Profile"."name", "public"."Profile"."title", "public"."Profile"."field", "public"."Profile"."bio", "public"."Profile"."birthYear", "public"."Profile"."deathYear", "public"."Profile"."avatarColor", "public"."Profile"."accent", "public"."Profile"."createdAt", "public"."Profile"."updatedAt" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ingestion failed Error: Configuration file not found or invalid. Please create .z-ai-config in your project, home directory, or /etc.
+    at async extractKnowledge (src\lib\ai.ts:79:15)
+    at async ingestDocument (src\lib\memory-store.ts:122:18)
+    at async POST (src\app\api\documents\route.ts:49:32)
+  77 |   documentText: string
+  78 | }): Promise<ExtractionResult> {
+> 79 |   const zai = await getZAI()
+     |               ^
+  80 |
+  81 |   const system = `You are ECHO, an engine that distills a person's raw knowledge artifacts (papers, notes, journals, transcripts, code) into a structured Digital Memory that future generations can converse with.
+  82 | 
+ POST /api/documents 500 in 1857ms (compile: 5ms, render: 1852ms)
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query INSERT INTO "public"."Document" ("id","profileId","title","sourceType","content","charCount","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "public"."Document"."id", "public"."Document"."profileId", "public"."Document"."title", "public"."Document"."sourceType", "public"."Document"."content", "public"."Document"."charCount", "public"."Document"."createdAt"
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."ownerId", "public"."Profile"."name", "public"."Profile"."title", "public"."Profile"."field", "public"."Profile"."bio", "public"."Profile"."birthYear", "public"."Profile"."deathYear", "public"."Profile"."avatarColor", "public"."Profile"."accent", "public"."Profile"."createdAt", "public"."Profile"."updatedAt" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ingestion failed Error: Configuration file not found or invalid. Please create .z-ai-config in your project, home directory, or /etc.
+    at async extractKnowledge (src\lib\ai.ts:79:15)
+    at async ingestDocument (src\lib\memory-store.ts:122:18)
+    at async POST (src\app\api\documents\route.ts:49:32)
+  77 |   documentText: string
+  78 | }): Promise<ExtractionResult> {
+> 79 |   const zai = await getZAI()
+     |               ^
+  80 |
+  81 |   const system = `You are ECHO, an engine that distills a person's raw knowledge artifacts (papers, notes, journals, transcripts, code) into a structured Digital Memory that future generations can converse with.
+  82 | 
+ POST /api/documents 500 in 993ms (compile: 7ms, render: 987ms)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query INSERT INTO "public"."Document" ("id","profileId","title","sourceType","content","charCount","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "public"."Document"."id", "public"."Document"."profileId", "public"."Document"."title", "public"."Document"."sourceType", "public"."Document"."content", "public"."Document"."charCount", "public"."Document"."createdAt"
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."ownerId", "public"."Profile"."name", "public"."Profile"."title", "public"."Profile"."field", "public"."Profile"."bio", "public"."Profile"."birthYear", "public"."Profile"."deathYear", "public"."Profile"."avatarColor", "public"."Profile"."accent", "public"."Profile"."createdAt", "public"."Profile"."updatedAt" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ingestion failed Error: Configuration file not found or invalid. Please create .z-ai-config in your project, home directory, or /etc.
+    at async extractKnowledge (src\lib\ai.ts:79:15)
+    at async ingestDocument (src\lib\memory-store.ts:122:18)
+    at async POST (src\app\api\documents\route.ts:49:32)
+  77 |   documentText: string
+  78 | }): Promise<ExtractionResult> {
+> 79 |   const zai = await getZAI()
+     |               ^
+  80 |
+  81 |   const system = `You are ECHO, an engine that distills a person's raw knowledge artifacts (papers, notes, journals, transcripts, code) into a structured Digital Memory that future generations can converse with.
+  82 | 
+ POST /api/documents 500 in 1157ms (compile: 6ms, render: 1151ms)
+prisma:query SELECT "public"."Profile"."id" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND "public"."Profile"."ownerId" = $2) LIMIT $3 OFFSET $4
+prisma:query INSERT INTO "public"."Document" ("id","profileId","title","sourceType","content","charCount","createdAt") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING "public"."Document"."id", "public"."Document"."profileId", "public"."Document"."title", "public"."Document"."sourceType", "public"."Document"."content", "public"."Document"."charCount", "public"."Document"."createdAt"
+prisma:query SELECT "public"."Profile"."id", "public"."Profile"."ownerId", "public"."Profile"."name", "public"."Profile"."title", "public"."Profile"."field", "public"."Profile"."bio", "public"."Profile"."birthYear", "public"."Profile"."deathYear", "public"."Profile"."avatarColor", "public"."Profile"."accent", "public"."Profile"."createdAt", "public"."Profile"."updatedAt" FROM "public"."Profile" WHERE ("public"."Profile"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ingestion failed Error: Configuration file not found or invalid. Please create .z-ai-config in your project, home directory, or /etc.
+    at async extractKnowledge (src\lib\ai.ts:79:15)
+    at async ingestDocument (src\lib\memory-store.ts:122:18)
+    at async POST (src\app\api\documents\route.ts:49:32)
+  77 |   documentText: string
+  78 | }): Promise<ExtractionResult> {
+> 79 |   const zai = await getZAI()
+     |               ^
+  80 |
+  81 |   const system = `You are ECHO, an engine that distills a person's raw knowledge artifacts (papers, notes, journals, transcripts, code) into a structured Digital Memory that future generations can converse with.
+  82 | 
+ POST /api/documents 500 in 916ms (compile: 6ms, render: 911ms)

@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
   if (!pid) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
   const text = String(content).slice(0, 16000)
+  // Save the document FIRST so it's preserved even if AI extraction fails.
   const document = await db.document.create({
     data: {
       profileId: pid,
@@ -45,6 +46,10 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  // Attempt AI extraction. If it fails (e.g. z-ai SDK not configured locally),
+  // return a graceful partial success instead of a 500 — the document is saved
+  // and the user can still view it; memories/graph/timeline just won't be
+  // generated until the AI is available.
   try {
     const { result, counts } = await ingestDocument({
       profileId: pid,
@@ -54,10 +59,17 @@ export async function POST(req: NextRequest) {
     })
     return NextResponse.json({ document, extraction: result, counts })
   } catch (err) {
-    console.error('ingestion failed', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'extraction failed', document },
-      { status: 500 },
-    )
+    const message = err instanceof Error ? err.message : 'extraction failed'
+    console.error('ingestion failed (document still saved):', message)
+    return NextResponse.json({
+      document,
+      extraction: null,
+      counts: { memories: 0, timeline: 0, nodes: 0, edges: 0 },
+      warning:
+        'Document saved, but AI extraction failed — ' +
+        (message.includes('z-ai-config')
+          ? 'the z-ai SDK is not configured. Create a .z-ai-config file in the project root.'
+          : message),
+    })
   }
 }

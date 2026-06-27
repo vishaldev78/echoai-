@@ -105,7 +105,7 @@ export const api = {
   listDocuments: (profileId: string) =>
     jfetch<{ documents: Document[] }>(`/api/documents?profileId=${profileId}`),
   uploadDocument: (data: { profileId: string; title: string; sourceType: string; content: string }) =>
-    jfetch<{ document: Document; counts: Record<string, number> }>('/api/documents', {
+    jfetch<{ document: Document; counts: Record<string, number>; warning?: string }>('/api/documents', {
       method: 'POST',
       body: JSON.stringify(data),
     }),

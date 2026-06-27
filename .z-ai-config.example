@@ -1,0 +1,7 @@
+{
+  "baseUrl": "https://internal-api.z.ai/v1",
+  "apiKey": "Z.ai",
+  "chatId": "your-chat-id",
+  "token": "your-jwt-token",
+  "userId": "your-user-id"
+}
