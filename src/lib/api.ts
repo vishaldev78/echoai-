@@ -1,4 +1,4 @@
-// Typed client wrappers around the MNEMOSYNE API.
+// Typed client wrappers around the ECHO API.
 
 export interface Profile {
   id: string
@@ -69,9 +69,23 @@ export interface Conversation {
 }
 
 async function jfetch<T>(url: string, init?: RequestInit): Promise<T> {
+  // Attach the current user's id so the server can scope all data to them.
+  let userId = ''
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = window.localStorage.getItem('echo-user')
+      if (raw) userId = (JSON.parse(raw) as { id?: string }).id ?? ''
+    } catch {
+      /* ignore */
+    }
+  }
   const res = await fetch(url, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(userId ? { 'x-user-id': userId } : {}),
+      ...(init?.headers ?? {}),
+    },
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))

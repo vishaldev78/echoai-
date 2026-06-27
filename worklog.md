@@ -159,3 +159,23 @@ Stage Summary:
 - Mobile UI now feels like a native Android app: Material 3 pill-indicator bottom nav, compact opaque app bar with contextual back titles, bottom-sheet dialogs (not centered modals), app-like page transitions, native touch feedback (press-scale, no tap flash, no overscroll bounce, no text-selection on chrome), FAB for primary actions.
 - Desktop remains a clean responsive web app (bottom nav hidden, header nav shown).
 - All dialogs (create profile, delete, logout, clear local) are now native bottom sheets.
+
+---
+Task ID: 14
+Agent: Orchestrator
+Task: Per-user data isolation + rename app to ECHO + recolor UI to fuchsia + upscale polish.
+
+Work Log:
+- Schema: added ownerId (User relation, onDelete: Cascade) to Profile. db push --force-reset wiped Neon and recreated with the new relation. Profiles now belong to a user.
+- Data isolation: created lib/auth.ts (currentUserId from x-user-id header). API client (lib/api.ts) now attaches x-user-id from localStorage on every request. Updated ALL routes to scope by owner: profiles (list/create filter by ownerId), profiles/[id] (findFirst by id+ownerId), documents/memories/graph/timeline (verify profile ownership before returning data), chat (verify profile ownership), conversations (verify ownership), history (where profile.ownerId = currentUser), seed (requires ownerId, creates profile owned by caller). User A's data is invisible to User B.
+- Storage keys: renamed mnemosyne-user → echo-user (store.ts), mnemosyne-lang → echo-lang (i18n + settings).
+- Rename: MNEMOSYNE/Mnemosyne → ECHO across all components, i18n strings, metadata, toasts ("Enter ECHO", "Log out of ECHO"). Wordmark is now "ECHO" with "AI" subtitle.
+- Recolor: brand amber (oklch hue 75) → fuchsia (oklch hue 300). Updated all CSS variables in globals.css (light + dark: --primary, --ring, --sidebar-*, --chart-*). Renamed .text-gradient-amber → .text-gradient-brand (fuchsia→rose→cyan gradient), .glow-amber → .glow-brand. Bulk-replaced amber→fuchsia Tailwind classes across all 16 component files (text-/bg-/border-/from-/to-/ring-/shadow-). Updated memory-graph person node from amber (#f59e0b) to fuchsia (#d946ef). Constellation dots/lines now fuchsia. Scrollbar now fuchsia-tinted. Radius bumped to 0.75rem for a softer, more premium feel.
+- Type palette (fact/decision/discovery/etc.) kept as categorical colors — intentionally independent of brand chrome.
+- Agent Browser verification: splash shows "ECHO" ✓, login "Enter ECHO" ✓, brand --primary is fuchsia (lab confirms) ✓, nav active uses fuchsia ✓, "Log out of ECHO?" dialog ✓. DATA ISOLATION: User A (Aria/28) seeded Dr. Aryan; User B (Leo/35) logged in → memories empty ("No memories preserved yet") → seeded own Dr. Aryan copy ✓. Chat RAG works ✓. 0 console errors, lint clean.
+
+Stage Summary:
+- App renamed: MNEMOSYNE → ECHO (wordmark, metadata, all strings).
+- New brand color: fuchsia (hue 300) — clearly not indigo/blue, modern and distinctive. Gradient is fuchsia→rose→cyan.
+- Per-user data isolation: every profile/memory/document/graph/timeline/conversation is scoped to the logged-in user via ownerId + x-user-id header. Users cannot see or access each other's data.
+- DB reset and re-synced on Neon with the new ownerId relation.

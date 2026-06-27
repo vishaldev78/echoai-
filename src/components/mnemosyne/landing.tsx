@@ -51,8 +51,8 @@ export function Landing() {
       <section className="relative overflow-hidden">
         {/* background layers */}
         <div className="absolute inset-0 -z-10 bg-grid opacity-60" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-amber-500/[0.07] via-transparent to-transparent" />
-        <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-amber-500/20 blur-[120px]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-fuchsia-500/[0.07] via-transparent to-transparent" />
+        <div className="pointer-events-none absolute -top-40 left-1/2 -z-10 h-[40rem] w-[40rem] -translate-x-1/2 rounded-full bg-fuchsia-500/20 blur-[120px]" />
         <div className="pointer-events-none absolute top-20 -right-20 -z-10 h-[30rem] w-[30rem] rounded-full bg-emerald-500/15 blur-[120px]" />
         <Constellation />
 
@@ -65,7 +65,7 @@ export function Landing() {
           >
             <Badge
               variant="outline"
-              className="mb-6 gap-2 border-amber-500/30 bg-amber-500/10 px-3 py-1 text-amber-600 dark:text-amber-300"
+              className="mb-6 gap-2 border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-1 text-fuchsia-600 dark:text-fuchsia-300"
             >
               <Sparkles className="h-3 w-3" />
               {t('landing.badge')}
@@ -74,7 +74,7 @@ export function Landing() {
             <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
               {t('landing.title1')}
               <br />
-              <span className="text-gradient-amber">{t('landing.title2')}</span>
+              <span className="text-gradient-brand">{t('landing.title2')}</span>
             </h1>
 
             <p className="mx-auto mt-6 max-w-2xl text-balance text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -86,7 +86,7 @@ export function Landing() {
                 size="lg"
                 onClick={exploreDemo}
                 disabled={seeding}
-                className="glow-amber h-12 gap-2 bg-gradient-to-br from-amber-500 to-amber-600 px-7 text-base font-semibold text-amber-950 hover:from-amber-400 hover:to-amber-500"
+                className="glow-brand h-12 gap-2 bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 px-7 text-base font-semibold text-fuchsia-950 hover:from-fuchsia-400 hover:to-fuchsia-500"
               >
                 <Brain className="h-5 w-5" />
                 {seeding ? t('landing.cta.demoLoading') : t('landing.cta.demo')}
@@ -120,7 +120,7 @@ export function Landing() {
               { k: t('landing.stat.answers'), v: t('landing.stat.grounded') },
             ].map((s) => (
               <div key={s.k} className="bg-background/80 px-4 py-5 text-center backdrop-blur">
-                <div className="text-lg font-semibold text-amber-500">{s.v}</div>
+                <div className="text-lg font-semibold text-fuchsia-500">{s.v}</div>
                 <div className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">
                   {s.k}
                 </div>
@@ -216,11 +216,11 @@ export function Landing() {
                 viewport={{ once: true, margin: '-80px' }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
               >
-                <Card className="group h-full border-border/60 transition-colors hover:border-amber-500/40 hover:bg-amber-500/[0.03]">
+                <Card className="group h-full border-border/60 transition-colors hover:border-fuchsia-500/40 hover:bg-fuchsia-500/[0.03]">
                   <CardContent className="flex h-full flex-col p-6">
                     <div className="flex items-center justify-between">
-                      <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-amber-500/15 to-emerald-500/15 ring-1 ring-amber-500/20 transition-transform group-hover:scale-105">
-                        <s.icon className="h-5 w-5 text-amber-500" />
+                      <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-fuchsia-500/15 to-emerald-500/15 ring-1 ring-fuchsia-500/20 transition-transform group-hover:scale-105">
+                        <s.icon className="h-5 w-5 text-fuchsia-500" />
                       </span>
                       <span className="font-mono text-xs text-muted-foreground">{s.step}</span>
                     </div>
@@ -238,7 +238,7 @@ export function Landing() {
       <section className="border-t border-border/50 bg-background/40">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-500">
               {t('landing.features.label')}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -255,9 +255,9 @@ export function Landing() {
               { icon: GitBranch, titleKey: 'landing.features.5.title', descKey: 'landing.features.5.desc' },
               { icon: Clock, titleKey: 'landing.features.6.title', descKey: 'landing.features.6.desc' },
             ].map((f) => (
-              <Card key={f.titleKey} className="border-border/60 transition-colors hover:border-amber-500/30">
+              <Card key={f.titleKey} className="border-border/60 transition-colors hover:border-fuchsia-500/30">
                 <CardContent className="p-6">
-                  <f.icon className="h-6 w-6 text-amber-500" />
+                  <f.icon className="h-6 w-6 text-fuchsia-500" />
                   <h3 className="mt-4 font-semibold">{t(f.titleKey)}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t(f.descKey)}</p>
                 </CardContent>
@@ -270,11 +270,11 @@ export function Landing() {
       {/* ───────────────────────── WHY MOONSHOT ───────────────────────── */}
       <section className="border-t border-border/50">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <Card className="relative overflow-hidden border-amber-500/20 bg-gradient-to-br from-amber-500/[0.06] via-transparent to-emerald-500/[0.06]">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-amber-500/20 blur-3xl" />
+          <Card className="relative overflow-hidden border-fuchsia-500/20 bg-gradient-to-br from-fuchsia-500/[0.06] via-transparent to-emerald-500/[0.06]">
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-fuchsia-500/20 blur-3xl" />
             <CardContent className="relative grid gap-10 p-8 sm:p-12 lg:grid-cols-[1.3fr_1fr] lg:items-center">
               <div>
-                <Badge variant="outline" className="mb-4 gap-1.5 border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-300">
+                <Badge variant="outline" className="mb-4 gap-1.5 border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-300">
                   <FlaskConical className="h-3 w-3" /> {t('landing.moonshot.label')}
                 </Badge>
                 <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -334,7 +334,7 @@ function Constellation() {
           cx={p.x}
           cy={p.y}
           r={0.12}
-          fill="oklch(0.78 0.16 75)"
+          fill="oklch(0.72 0.22 300)"
           style={{ animation: `mnemo-pulse-dot ${4 + (i % 5)}s ease-in-out ${i * 0.15}s infinite` }}
         />
       ))}
@@ -347,7 +347,7 @@ function Constellation() {
             y1={p.y}
             x2={q.x}
             y2={q.y}
-            stroke="oklch(0.78 0.16 75)"
+            stroke="oklch(0.72 0.22 300)"
             strokeWidth={0.04}
             style={{ animation: `mnemo-pulse-line ${6 + (i % 4)}s ease-in-out ${i * 0.2}s infinite` }}
           />

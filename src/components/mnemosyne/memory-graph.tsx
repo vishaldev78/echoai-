@@ -36,7 +36,7 @@ type ColorDef = { fill: string; stroke: string; glow: string }
 
 // Refined palette — deliberately NO indigo / blue.
 const TYPE_COLORS: Record<string, ColorDef> = {
-  person:     { fill: '#f59e0b', stroke: '#fcd34d', glow: '#fde68a' }, // amber
+  person:     { fill: '#d946ef', stroke: '#f0abfc', glow: '#fae8ff' }, // fuchsia (brand)
   research:   { fill: '#10b981', stroke: '#6ee7b7', glow: '#a7f3d0' }, // emerald
   discovery:  { fill: '#06b6d4', stroke: '#67e8f9', glow: '#a5f3fc' }, // cyan
   decision:   { fill: '#8b5cf6', stroke: '#c4b5fd', glow: '#ddd6fe' }, // violet

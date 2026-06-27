@@ -16,14 +16,14 @@ const en = {
   'nav.language': 'Language',
 
   // footer
-  'footer.tagline': 'Books preserved what humans knew. Mnemosyne preserves how humans thought — a digital memory layer for humanity.',
+  'footer.tagline': 'Books preserved what humans knew. ECHO preserves how humans thought — a digital memory layer for humanity.',
   'footer.built': 'Built with \u2665 for the generations who come next.',
 
   // landing — hero
   'landing.badge': 'A Digital Memory Layer for Humanity',
   'landing.title1': 'Preserving human intelligence',
   'landing.title2': 'beyond human lifespan.',
-  'landing.subtitle': 'When a great scientist dies, their reasoning disappears with them — the papers survive, but the why does not. Mnemosyne distills a person\u2019s writings, notes and failures into a living knowledge graph you can converse with, forever.',
+  'landing.subtitle': 'When a great scientist dies, their reasoning disappears with them — the papers survive, but the why does not. ECHO distills a person\u2019s writings, notes and failures into a living knowledge graph you can converse with, forever.',
   'landing.cta.demo': "Explore Dr. Aryan's Memory",
   'landing.cta.demoLoading': 'Awakening\u2026',
   'landing.cta.preserve': 'Preserve a Memory',
@@ -57,7 +57,7 @@ const en = {
   // landing — solution
   'landing.solution.label': 'The solution',
   'landing.solution.title': 'From scattered artifacts to a mind you can talk to.',
-  'landing.solution.body': "Mnemosyne reads everything a person left behind and weaves it into a structured Digital Memory — knowledge units, a reasoning graph, a timeline, and a thinking-style fingerprint. Then it answers questions in their voice, grounded only in what they actually wrote.",
+  'landing.solution.body': "ECHO reads everything a person left behind and weaves it into a structured Digital Memory — knowledge units, a reasoning graph, a timeline, and a thinking-style fingerprint. Then it answers questions in their voice, grounded only in what they actually wrote.",
   'landing.solution.1.title': 'Upload knowledge',
   'landing.solution.1.desc': 'PDFs, notes, markdown, transcripts, code. The raw footprint of a mind.',
   'landing.solution.2.title': 'AI extraction',
@@ -86,9 +86,9 @@ const en = {
   // landing — moonshot
   'landing.moonshot.label': 'Why this is a moonshot',
   'landing.moonshot.title1': 'Current AI stores information.',
-  'landing.moonshot.title2': 'Mnemosyne stores how humans thought.',
+  'landing.moonshot.title2': 'ECHO stores how humans thought.',
   'landing.moonshot.body': 'Imagine an Einstein Memory. A Newton Memory. The memories of every scientist, doctor, engineer and teacher who shaped our world \u2014 queryable, in their own voice, by anyone who comes after. A collective intelligence network, built one preserved mind at a time.',
-  'landing.moonshot.quote': '\u201CBooks preserved what humans knew. Mnemosyne preserves how humans thought.\u201D',
+  'landing.moonshot.quote': '\u201CBooks preserved what humans knew. ECHO preserves how humans thought.\u201D',
   'landing.moonshot.pitch': '\u2014 The pitch',
   'landing.moonshot.cta': 'Converse with a preserved mind',
 
@@ -250,7 +250,7 @@ const en = {
   'login.namePh': 'Your name',
   'login.age': 'Age',
   'login.agePh': 'Your age',
-  'login.submit': 'Enter Mnemosyne',
+  'login.submit': 'Enter ECHO',
   'login.submitting': 'Entering\u2026',
   'login.error': 'Please enter your name and a valid age.',
   'login.fail': 'Could not sign in. Please try again.',
@@ -268,11 +268,11 @@ const en = {
   'settings.account.name': 'Name',
   'settings.account.age': 'Age',
   'settings.logout': 'Log out',
-  'settings.logoutConfirm': 'Log out of Mnemosyne?',
+  'settings.logoutConfirm': 'Log out of ECHO?',
   'settings.logoutConfirmBody': 'You will return to the login screen. Your preserved memories stay safe.',
   'settings.logoutCancel': 'Cancel',
   'settings.about': 'About',
-  'settings.about.body': 'Mnemosyne preserves how humans thought — not just what they knew. Built so the reasoning of every scientist, doctor and teacher outlives them, queryable in their own voice.',
+  'settings.about.body': 'ECHO preserves how humans thought — not just what they knew. Built so the reasoning of every scientist, doctor and teacher outlives them, queryable in their own voice.',
   'settings.about.version': 'Version',
   'settings.danger': 'Danger zone',
   'settings.clearLocal': 'Clear local data',
@@ -569,7 +569,7 @@ interface I18nValue {
 
 const I18nContext = createContext<I18nValue | null>(null)
 
-const STORAGE_KEY = 'mnemosyne-lang'
+const STORAGE_KEY = 'echo-lang'
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   // SSR-safe: always render 'en' first (matches server), then sync from

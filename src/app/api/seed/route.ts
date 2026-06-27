@@ -190,17 +190,21 @@ const DEMO_DOCUMENTS = [
   },
 ]
 
-export async function POST() {
-  // idempotent: remove any prior Dr. Aryan Rao profile, then rebuild
+export async function POST(req: Request) {
+  const ownerId = req.headers.get('x-user-id')
+  if (!ownerId) {
+    return Response.json({ error: 'Sign in to load the demo' }, { status: 401 })
+  }
+  // idempotent per-user: remove any prior Dr. Aryan Rao profile owned by this user
   const existing = await db.profile.findFirst({
-    where: { name: PROFILE.name },
+    where: { name: PROFILE.name, ownerId },
     select: { id: true },
   })
   if (existing) {
     await db.profile.delete({ where: { id: existing.id } })
   }
 
-  const profile = await db.profile.create({ data: PROFILE })
+  const profile = await db.profile.create({ data: { ...PROFILE, ownerId } })
 
   // documents
   const docRows = await Promise.all(

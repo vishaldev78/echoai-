@@ -1,23 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { currentUserId } from '@/lib/auth'
 import { chatWithMemory } from '@/lib/ai'
 
 export async function POST(req: NextRequest) {
+  const ownerId = currentUserId(req)
+  if (!ownerId) {
+    return NextResponse.json({ error: 'Sign in to chat' }, { status: 401 })
+  }
   const body = await req.json().catch(() => ({}))
   const { profileId, question, conversationId } = body ?? {}
   if (!profileId || !question) {
     return NextResponse.json({ error: 'profileId and question are required' }, { status: 400 })
   }
 
-  // find or create conversation
+  // verify ownership of the profile
+  const owned = await db.profile.findFirst({ where: { id: profileId, ownerId }, select: { id: true } })
+  if (!owned) return NextResponse.json({ error: 'not found' }, { status: 404 })
+
+  // find or create conversation (must belong to this profile)
   let conv = conversationId
-    ? await db.conversation.findUnique({ where: { id: conversationId } })
+    ? await db.conversation.findFirst({ where: { id: conversationId, profileId } })
     : null
   if (!conv) {
     conv = await db.conversation.create({ data: { profileId } })
   }
 
-  // load recent history (last 16 messages)
   const prior = await db.message.findMany({
     where: { conversationId: conv.id },
     orderBy: { createdAt: 'asc' },
@@ -30,7 +38,6 @@ export async function POST(req: NextRequest) {
     history: prior.map((m) => ({ role: m.role, content: m.content })),
   })
 
-  // persist user + assistant messages
   await db.message.createMany({
     data: [
       { conversationId: conv.id, role: 'user', content: String(question), sources: '' },

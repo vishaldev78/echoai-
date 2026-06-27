@@ -109,8 +109,8 @@ export function ChatPanel({ profile }: { profile: Profile }) {
       {/* header */}
       <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <Avatar className="h-9 w-9 ring-2 ring-amber-500/20">
-            <AvatarFallback className="bg-gradient-to-br from-amber-500/25 to-emerald-500/25 text-xs font-semibold text-amber-600 dark:text-amber-300">
+          <Avatar className="h-9 w-9 ring-2 ring-fuchsia-500/20">
+            <AvatarFallback className="bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 text-xs font-semibold text-fuchsia-600 dark:text-fuchsia-300">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -151,7 +151,7 @@ export function ChatPanel({ profile }: { profile: Profile }) {
                       className={
                         m.role === 'user'
                           ? 'bg-secondary text-xs'
-                          : 'bg-gradient-to-br from-amber-500/25 to-emerald-500/25 text-xs font-semibold text-amber-600 dark:text-amber-300'
+                          : 'bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 text-xs font-semibold text-fuchsia-600 dark:text-fuchsia-300'
                       }
                     >
                       {m.role === 'user' ? (t('nav.home') === 'Home' ? 'You' : 'आप') : initials}
@@ -175,7 +175,7 @@ export function ChatPanel({ profile }: { profile: Profile }) {
                         {m.sources.map((s, i) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-600 dark:text-amber-300"
+                            className="inline-flex items-center gap-1 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-2 py-0.5 text-[10px] text-fuchsia-600 dark:text-fuchsia-300"
                           >
                             <Brain className="h-2.5 w-2.5" />
                             {s.title}
@@ -191,14 +191,14 @@ export function ChatPanel({ profile }: { profile: Profile }) {
             {sending && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
                 <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className="bg-gradient-to-br from-amber-500/25 to-emerald-500/25 text-xs font-semibold text-amber-600 dark:text-amber-300">
+                  <AvatarFallback className="bg-gradient-to-br from-fuchsia-500/25 to-emerald-500/25 text-xs font-semibold text-fuchsia-600 dark:text-fuchsia-300">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex items-center gap-1.5 rounded-2xl border border-border/60 bg-card px-4 py-3.5">
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-amber-500 [animation-delay:-0.3s]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-amber-500 [animation-delay:-0.15s]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-amber-500" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-fuchsia-500 [animation-delay:-0.3s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-fuchsia-500 [animation-delay:-0.15s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-fuchsia-500" />
                 </div>
               </motion.div>
             )}
@@ -254,8 +254,8 @@ function Welcome({
   const suggestions = SUGGESTION_KEYS.map((k) => t(k))
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center py-8 text-center">
-      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-500/15 to-emerald-500/15 ring-1 ring-amber-500/25">
-        <Brain className="h-7 w-7 text-amber-500" />
+      <span className="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia-500/15 to-emerald-500/15 ring-1 ring-fuchsia-500/25">
+        <Brain className="h-7 w-7 text-fuchsia-500" />
       </span>
       <h3 className="mt-4 text-lg font-semibold">{t('chat.welcome.title', { name })}</h3>
       <p className="mt-1.5 text-sm text-muted-foreground">
@@ -266,9 +266,9 @@ function Welcome({
           <button
             key={q}
             onClick={() => onPick(q)}
-            className="group flex items-center gap-2.5 rounded-xl border border-border/60 bg-background/50 px-3.5 py-3 text-left text-sm transition-all hover:border-amber-500/40 hover:bg-amber-500/[0.03]"
+            className="group flex items-center gap-2.5 rounded-xl border border-border/60 bg-background/50 px-3.5 py-3 text-left text-sm transition-all hover:border-fuchsia-500/40 hover:bg-fuchsia-500/[0.03]"
           >
-            <Sparkles className="h-4 w-4 shrink-0 text-amber-500/70 group-hover:text-amber-500" />
+            <Sparkles className="h-4 w-4 shrink-0 text-fuchsia-500/70 group-hover:text-fuchsia-500" />
             <span className="text-muted-foreground group-hover:text-foreground">{q}</span>
           </button>
         ))}

@@ -38,7 +38,7 @@ interface AppState {
   logout: () => void
 }
 
-const USER_KEY = 'mnemosyne-user'
+const USER_KEY = 'echo-user'
 
 function loadUser(): AppUser | null {
   if (typeof window === 'undefined') return null

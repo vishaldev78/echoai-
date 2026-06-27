@@ -108,7 +108,7 @@ export function UploadPanel({
       <Card className="border-border/60">
         <CardContent className="p-6">
           <div className="flex items-center gap-2">
-            <Upload className="h-4 w-4 text-amber-500" />
+            <Upload className="h-4 w-4 text-fuchsia-500" />
             <h2 className="text-lg font-semibold">{t('upload.title')}</h2>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -141,8 +141,8 @@ export function UploadPanel({
                     disabled={busy}
                     className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
                       sourceType === s.value
-                        ? 'border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-300'
-                        : 'border-border/60 text-muted-foreground hover:border-amber-500/30 hover:text-foreground'
+                        ? 'border-fuchsia-500/40 bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300'
+                        : 'border-border/60 text-muted-foreground hover:border-fuchsia-500/30 hover:text-foreground'
                     }`}
                   >
                     {s.label}
@@ -211,7 +211,7 @@ export function UploadPanel({
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  <Sparkles className="h-4 w-4 text-fuchsia-500" />
                   {t('upload.preserve')}
                 </>
               )}
@@ -221,10 +221,10 @@ export function UploadPanel({
       </Card>
 
       <div className="space-y-4">
-        <Card className="border-amber-500/20 bg-amber-500/[0.03]">
+        <Card className="border-fuchsia-500/20 bg-fuchsia-500/[0.03]">
           <CardContent className="p-5">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <Sparkles className="h-4 w-4 text-amber-500" /> {t('upload.whatExtracts')}
+              <Sparkles className="h-4 w-4 text-fuchsia-500" /> {t('upload.whatExtracts')}
             </h3>
             <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
               {[
@@ -246,7 +246,7 @@ export function UploadPanel({
         <Card className="border-border/60">
           <CardContent className="p-5">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
-              <FileText className="h-4 w-4 text-amber-500" /> {t('upload.sourceDocs')}
+              <FileText className="h-4 w-4 text-fuchsia-500" /> {t('upload.sourceDocs')}
               <Badge variant="secondary" className="ml-auto">
                 {docs?.length ?? 0}
               </Badge>

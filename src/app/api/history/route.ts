@@ -1,10 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { currentUserId } from '@/lib/auth'
 
-// Returns all conversations across all profiles, newest first, with the
-// profile name + message count + first user question + last assistant reply.
-export async function GET() {
+// Returns all conversations for profiles OWNED by the current user only.
+export async function GET(req: NextRequest) {
+  const ownerId = currentUserId(req)
+  if (!ownerId) return NextResponse.json({ conversations: [] })
   const conversations = await db.conversation.findMany({
+    where: { profile: { ownerId } },
     orderBy: { createdAt: 'desc' },
     include: {
       profile: { select: { id: true, name: true, title: true, field: true } },

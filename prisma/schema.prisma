@@ -1,4 +1,4 @@
-// MNEMOSYNE AI — Digital Memory Layer
+// ECHO — Digital Memory Layer
 // Prisma schema — Neon (PostgreSQL) production database.
 
 generator client {
@@ -17,23 +17,27 @@ model User {
   age       Int
   createdAt DateTime @default(now())
 
+  profiles Profile[]
+
   @@unique([name, age])
 }
 
 /// A preserved person / "digital memory" (e.g. Dr. Aryan)
 model Profile {
   id          String   @id @default(cuid())
+  ownerId     String
   name        String
   title       String
   field       String
   bio         String
   birthYear   Int?
   deathYear   Int?
-  avatarColor String   @default("amber")
-  accent      String   @default("emerald")
+  avatarColor String   @default("fuchsia")
+  accent      String   @default("cyan")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  owner          User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   documents      Document[]
   memories       Memory[]
   graphNodes     GraphNode[]

@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { currentUserId } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
   const profileId = req.nextUrl.searchParams.get('profileId')
-  if (!profileId) return NextResponse.json({ error: 'profileId required' }, { status: 400 })
+  const ownerId = currentUserId(req)
+  if (!profileId || !ownerId) return NextResponse.json({ conversation: null })
+  // only return if the profile belongs to the caller
+  const owned = await db.profile.findFirst({ where: { id: profileId, ownerId }, select: { id: true } })
+  if (!owned) return NextResponse.json({ conversation: null })
   const conv = await db.conversation.findFirst({
     where: { profileId },
     orderBy: { createdAt: 'desc' },
@@ -14,7 +19,9 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const profileId = req.nextUrl.searchParams.get('profileId')
-  if (!profileId) return NextResponse.json({ error: 'profileId required' }, { status: 400 })
-  await db.conversation.deleteMany({ where: { profileId } })
+  const ownerId = currentUserId(req)
+  if (!profileId || !ownerId) return NextResponse.json({ ok: true })
+  const owned = await db.profile.findFirst({ where: { id: profileId, ownerId }, select: { id: true } })
+  if (owned) await db.conversation.deleteMany({ where: { profileId } })
   return NextResponse.json({ ok: true })
 }

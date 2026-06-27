@@ -17,18 +17,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mnemosyne AI — A Digital Memory Layer for Humanity",
+  title: "ECHO AI — A Digital Memory Layer for Humanity",
   description:
     "Preserve a person's knowledge, reasoning and experience beyond their lifespan. Upload their writings, let AI weave a knowledge graph, and converse with the intelligence they left behind.",
-  keywords: ["Mnemosyne", "digital memory", "AI", "knowledge graph", "RAG", "legacy", "intelligence"],
-  authors: [{ name: "Mnemosyne AI" }],
+  keywords: ["ECHO", "digital memory", "AI", "knowledge graph", "RAG", "legacy", "intelligence"],
+  authors: [{ name: "ECHO AI" }],
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },
   openGraph: {
-    title: "Mnemosyne AI — A Digital Memory Layer for Humanity",
-    description: "Books preserved what humans knew. Mnemosyne preserves how humans thought.",
-    siteName: "Mnemosyne AI",
+    title: "ECHO AI — A Digital Memory Layer for Humanity",
+    description: "Books preserved what humans knew. ECHO preserves how humans thought.",
+    siteName: "ECHO AI",
     type: "website",
   },
 };

@@ -58,14 +58,14 @@ const TYPE_STYLES: Record<EventType, TypeStyle> = {
     icon: FlaskConical,
     label: 'Experiment',
     badge:
-      'border-amber-500/40 bg-background text-amber-700 dark:text-amber-300',
-    dot: 'bg-amber-500',
+      'border-fuchsia-500/40 bg-background text-fuchsia-700 dark:text-fuchsia-300',
+    dot: 'bg-fuchsia-500',
     glow:
       'shadow-[0_0_0_4px_rgba(245,158,11,0.10),0_0_16px_2px_rgba(245,158,11,0.45)]',
     iconWrap:
-      'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/25',
-    accentText: 'text-amber-600 dark:text-amber-400',
-    leftBar: 'bg-gradient-to-b from-amber-500 to-amber-500/10',
+      'bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400 ring-1 ring-fuchsia-500/25',
+    accentText: 'text-fuchsia-600 dark:text-fuchsia-400',
+    leftBar: 'bg-gradient-to-b from-fuchsia-500 to-fuchsia-500/10',
   },
   discovery: {
     icon: Telescope,
@@ -204,7 +204,7 @@ export function TimelineView({
         <div className="relative mb-6">
           <div
             aria-hidden
-            className="absolute inset-0 -z-10 rounded-full bg-gradient-to-br from-violet-500/20 via-rose-500/10 to-amber-500/20 blur-2xl"
+            className="absolute inset-0 -z-10 rounded-full bg-gradient-to-br from-violet-500/20 via-rose-500/10 to-fuchsia-500/20 blur-2xl"
           />
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl border bg-card/70 backdrop-blur-sm">
             <Sparkles className="h-7 w-7 text-muted-foreground" />
@@ -244,7 +244,7 @@ export function TimelineView({
         {/* Desktop-only faint colored aura along the spine */}
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-1/2 bg-gradient-to-b from-amber-500/15 via-violet-500/15 to-rose-500/15 blur-[2px] md:block"
+          className="pointer-events-none absolute bottom-0 left-1/2 top-0 hidden w-px -translate-x-1/2 bg-gradient-to-b from-fuchsia-500/15 via-violet-500/15 to-rose-500/15 blur-[2px] md:block"
         />
 
         <ol className="relative space-y-6 md:space-y-10">

@@ -78,7 +78,7 @@ export async function extractKnowledge(opts: {
 }): Promise<ExtractionResult> {
   const zai = await getZAI()
 
-  const system = `You are MNEMOSYNE, an engine that distills a person's raw knowledge artifacts (papers, notes, journals, transcripts, code) into a structured Digital Memory that future generations can converse with.
+  const system = `You are ECHO, an engine that distills a person's raw knowledge artifacts (papers, notes, journals, transcripts, code) into a structured Digital Memory that future generations can converse with.
 
 You extract:
 - discrete MEMORIES (facts, decisions, discoveries, failures, concepts, experiments, quotes, principles)
@@ -256,7 +256,7 @@ ${contextBlock}
 
 Rules:
 - Stay in character. Be specific and grounded. Quote distinctive phrasing when relevant.
-- If the preserved memories do not contain the answer, say so honestly rather than inventing — the entire point of Mnemosyne is that nothing is fabricated.
+- If the preserved memories do not contain the answer, say so honestly rather than inventing — the entire point of ECHO is that nothing is fabricated.
 - Keep answers concise (2-5 sentences) unless the question asks for depth.
 - Never break character or mention that you are an AI or a language model.`
 
@@ -299,7 +299,7 @@ export async function buildThinkingStyle(profile: {
       {
         role: 'assistant',
         content:
-          'You are MNEMOSYNE. You build a cognitive fingerprint of a person from their preserved writings. Respond with ONE valid JSON object only.',
+          'You are ECHO. You build a cognitive fingerprint of a person from their preserved writings. Respond with ONE valid JSON object only.',
       },
       {
         role: 'user',

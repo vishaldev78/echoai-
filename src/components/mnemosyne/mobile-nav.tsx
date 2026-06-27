@@ -42,7 +42,7 @@ export function MobileNav() {
               key={tab.key}
               onClick={() => setTab(tab.key)}
               className={`press flex flex-1 flex-col items-center justify-center gap-1 ${
-                active ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+                active ? 'text-fuchsia-600 dark:text-fuchsia-400' : 'text-muted-foreground'
               }`}
               aria-label={tab.label}
               aria-current={active ? 'page' : undefined}
@@ -51,7 +51,7 @@ export function MobileNav() {
                 {active && (
                   <motion.span
                     layoutId="m3-nav-pill"
-                    className="absolute inset-0 rounded-full bg-amber-500/15"
+                    className="absolute inset-0 rounded-full bg-fuchsia-500/15"
                     transition={{ type: 'spring', stiffness: 500, damping: 36 }}
                   />
                 )}
@@ -87,7 +87,7 @@ export function MobileNav() {
             key={item.label}
             onClick={item.onClick}
             className={`press flex flex-1 flex-col items-center justify-center gap-1 ${
-              active ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+              active ? 'text-fuchsia-600 dark:text-fuchsia-400' : 'text-muted-foreground'
             }`}
             aria-label={item.label}
             aria-current={active ? 'page' : undefined}
@@ -96,7 +96,7 @@ export function MobileNav() {
               {active && (
                 <motion.span
                   layoutId="m3-nav-pill"
-                  className="absolute inset-0 rounded-full bg-amber-500/15"
+                  className="absolute inset-0 rounded-full bg-fuchsia-500/15"
                   transition={{ type: 'spring', stiffness: 500, damping: 36 }}
                 />
               )}
