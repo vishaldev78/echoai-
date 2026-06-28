@@ -2,191 +2,192 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
 // A rich, pre-built Digital Memory for the hackathon demo so judges can
-// converse with a preserved scientist instantly — no upload wait needed.
-// Subject: Dr. Aryan Rao, solid-state battery materials scientist.
+// converse with a preserved genius instantly — no upload wait needed.
+// Subject: Albert Einstein, theoretical physicist.
 
 const PROFILE = {
-  name: 'Dr. Aryan Rao',
-  title: 'Solid-State Battery Scientist',
-  field: 'Materials Science & Energy Storage',
-  bio: 'Pioneered sulfide-based solid electrolytes for next-generation batteries. Spent a decade chasing a single goal: an energy-dense, fire-safe cell that outlives the devices it powers. Believed the most valuable knowledge is the reasoning behind the failures, not the publications behind the successes.',
-  birthYear: 1990,
-  deathYear: 2033,
-  avatarColor: 'amber',
-  accent: 'emerald',
+  name: 'Albert Einstein',
+  title: 'Theoretical Physicist',
+  field: 'Physics & Mathematics',
+  bio: 'Revolutionized modern physics with the theory of relativity and the photoelectric effect. Spent decades pursuing a unified field theory. Believed that imagination is more important than knowledge, and that the most beautiful thing we can experience is the mysterious. Known for his humility, curiosity, and relentless questioning of the universe.',
+  birthYear: 1879,
+  deathYear: 1955,
+  avatarColor: 'blue',
+  accent: 'purple',
 }
 
 const MEMORIES = [
   {
     type: 'principle',
-    title: 'Failures encode the real reasoning',
+    title: 'Imagination over knowledge',
     content:
-      'I insisted every lab notebook entry end with a "why" paragraph. A published paper hides the hundred dead ends; the notebook is where my actual thinking lived. Future students should read the failures before the discoveries.',
-    year: 2026,
-    keywords: 'failure, reasoning, notebook, methodology, lab culture',
-  },
-  {
-    type: 'decision',
-    title: 'Rejected lithium-metal anode for the 2028 prototype',
-    content:
-      'I rejected the lithium-metal anode design in 2028 because its thermal stability was insufficient — dendrite nucleation at 60°C created a runaway risk I was not willing to ship. The energy density gain (~15%) did not justify a cell that could ignite in a phone pocket.',
-    year: 2028,
-    keywords: 'lithium metal, anode, thermal stability, dendrite, safety, rejection, battery',
-  },
-  {
-    type: 'failure',
-    title: 'High-temperature degradation of the 2025 cell',
-    content:
-      'The 2025 prototype failed catastrophically: at 80°C the sulfide electrolyte decomposed and the cell lost 40% capacity in 50 cycles. Root cause was interfacial reaction between Li6PS5Cl and the lithium anode. It taught me that interface chemistry, not bulk conductivity, governs real-world life.',
-    year: 2025,
-    keywords: 'failure, high temperature, degradation, sulfide, interface, capacity loss, LPSCl',
+      'Imagination is more important than knowledge. Knowledge is limited. Imagination encircles the world. I always told my students: do not stop questioning. Curiosity has its own reason for existing.',
+    year: 1929,
+    keywords: 'imagination, knowledge, creativity, thinking, curiosity',
   },
   {
     type: 'discovery',
-    title: 'Argyrodite interfacial coating doubles cycle life',
+    title: 'The photoelectric effect',
     content:
-      'By coating the Li6PS5Cl electrolyte with a 4nm LiNbO3 interlayer, interfacial resistance dropped from 1200 to 210 Ω·cm² and cycle life doubled to over 1000 cycles. The coating became the keystone of every later cell I built.',
-    year: 2027,
-    keywords: 'discovery, argyrodite, LiNbO3, coating, interface, cycle life, interlayer',
-  },
-  {
-    type: 'experiment',
-    title: 'Symmetric Li/Li cell cycling protocol',
-    content:
-      'I standardized on symmetric Li/Li cells at 0.5 mA/cm² for 1000h to screen electrolytes before full-cell assembly. It cut evaluation time from 3 months to 2 weeks and caught dendrite-prone chemistries early.',
-    year: 2026,
-    keywords: 'experiment, symmetric cell, protocol, screening, dendrite, current density',
-  },
-  {
-    type: 'concept',
-    title: 'Interface-first design philosophy',
-    content:
-      'Bulk ionic conductivity is a vanity metric. The interfaces — anode/electrolyte and cathode/electrolyte — determine whether a solid cell survives. I taught my group to design interfaces first and chemistry second.',
-    year: 2027,
-    keywords: 'concept, interface, design philosophy, conductivity, cathode, anode',
-  },
-  {
-    type: 'quote',
-    title: '"A battery that burns is not a battery, it is a liability."',
-    content:
-      'From my 2029 keynote on safety-first design. I refused to publish any cell that could not pass a 150°C nail-penetration test, regardless of its energy density headline.',
-    year: 2029,
-    keywords: 'quote, safety, nail penetration, fire, liability, keynote',
-  },
-  {
-    type: 'fact',
-    title: 'Target: 500 Wh/kg at 1000 cycles',
-    content:
-      'The moonshot metric I set for the lab in 2030: 500 Wh/kg gravimetric energy density sustained over 1000 cycles with under 10% fade. We hit 412 Wh/kg by 2032 — close, not enough.',
-    year: 2030,
-    keywords: 'target, energy density, wh/kg, cycles, goal, metric',
+      'Light behaves as both a wave and a particle. This quantum insight, which earned me the Nobel Prize in 1921, emerged from thinking about how light could eject electrons from metal. It was the first step toward quantum mechanics.',
+    year: 1905,
+    keywords: 'photoelectric effect, quantum, Nobel, light, particle, wave',
   },
   {
     type: 'discovery',
-    title: 'Chlorine-rich argyrodite hits 12 mS/cm',
+    title: 'Special theory of relativity',
     content:
-      'Tuning the chlorine stoichiometry in Li6PS5Cl toward Li6PS5.5Cl0.5 raised room-temperature ionic conductivity to 12 mS/cm — within reach of liquid electrolytes while remaining non-flammable.',
-    year: 2031,
-    keywords: 'discovery, chlorine, stoichiometry, conductivity, argyrodite, mS/cm',
+      'In 1905, I realized that the laws of physics are the same for all observers moving at constant speed. This led to the conclusion that time and space are relative, not absolute. The equation E = mc² emerged from this work.',
+    year: 1905,
+    keywords: 'relativity, special relativity, E=mc², time, space, physics',
+  },
+  {
+    type: 'discovery',
+    title: 'General theory of relativity',
+    content:
+      'By 1915, I had extended relativity to include gravity. Massive objects warp the fabric of spacetime itself. This was confirmed in 1919 when starlight bent around the sun during a solar eclipse — it made me famous overnight.',
+    year: 1915,
+    keywords: 'general relativity, gravity, spacetime, eclipse, confirmation',
   },
   {
     type: 'failure',
-    title: 'Scale-up killed the 2031 cell',
+    title: 'The cosmological constant mistake',
     content:
-      'The lab cell hit 1000 cycles; the pilot line made 60 before failure. Roll-to-roll calendaring introduced microcracks in the sulfide pellet. My mistake was optimizing the chemistry without owning the manufacturing process. Manufacturing IS the science at scale.',
-    year: 2031,
-    keywords: 'failure, scale-up, manufacturing, microcracks, calendaring, pilot line',
-  },
-  {
-    type: 'decision',
-    title: 'Open-sourced the interfacial coating recipe',
-    content:
-      'In 2032 I published the full LiNbO3 coating protocol under CC-BY. A locked-in safety breakthrough helps no one. I traded a patent for velocity across the field.',
-    year: 2032,
-    keywords: 'decision, open source, patent, CC-BY, coating, protocol, field velocity',
+      'I introduced the cosmological constant to maintain a static universe, calling it my "greatest blunder." When Hubble showed the universe was expanding, I realized I had missed the most beautiful prediction of my own theory. I should have trusted the math.',
+    year: 1917,
+    keywords: 'cosmological constant, blunder, static universe, expansion, Hubble',
   },
   {
     type: 'principle',
-    title: 'Own the process, not just the material',
+    title: 'God does not play dice',
     content:
-      'My final lesson: a material that cannot be manufactured is a hypothesis, not a product. Every future researcher should spend at least one season on the production floor before claiming a breakthrough.',
-    year: 2032,
-    keywords: 'principle, manufacturing, process, production, hypothesis, lesson',
+      'My famous objection to quantum mechanics. I could not accept that the universe was fundamentally probabilistic. "God does not play dice with the universe" — though I should have said: God plays dice, but they are loaded.',
+    year: 1926,
+    keywords: 'quantum mechanics, probability, determinism, Bohr, debate',
+  },
+  {
+    type: 'concept',
+    title: 'Unified field theory pursuit',
+    content:
+      'My life\'s final quest: unify electromagnetism and gravity into a single mathematical framework. I never succeeded. Some called it my obsession; I called it my duty. The pursuit taught me more than the destination ever would have.',
+    year: 1940,
+    keywords: 'unified field, electromagnetism, gravity, theory of everything, obsession',
+  },
+  {
+    type: 'quote',
+    title: '"The important thing is not to stop questioning"',
+    content:
+      'From my conversations with students. I always believed that the most important thing is to never lose a holy curiosity. The universe is vast and strange — our job is to keep asking, keep wondering.',
+    year: 1955,
+    keywords: 'questioning, curiosity, wonder, learning, education',
+  },
+  {
+    type: 'decision',
+    title: 'Letter to Roosevelt on atomic weapons',
+    content:
+      'In 1939, I signed the letter urging President Roosevelt to develop nuclear weapons before the Nazis. It was the hardest decision of my life. I later said: "If I had known the Germans would not succeed, I would have never lifted a finger."',
+    year: 1939,
+    keywords: 'atomic bomb, Roosevelt, World War II, decision, regret, nuclear',
+  },
+  {
+    type: 'principle',
+    title: 'Peace and internationalism',
+    content:
+      'After Hiroshima, I dedicated my life to peace. I became a passionate advocate for disarmament and world government. "I made one great mistake in my life — when I signed the letter to Roosevelt recommending that atom bombs be made."',
+    year: 1945,
+    keywords: 'peace, disarmament, internationalism, activism, humanitarian',
+  },
+  {
+    type: 'failure',
+    title: 'Rejected from ETH Zurich as a student',
+    content:
+      'I failed the entrance exam to the Swiss Federal Institute of Technology in 1895. Not because I lacked ability — but because I was unprepared in botany, zoology, and languages. The rejection taught me to trust my own path, not institutional approval.',
+    year: 1895,
+    keywords: 'failure, ETH Zurich, rejection, education, resilience',
+  },
+  {
+    type: 'experiment',
+    title: 'The thought experiment of chasing a light beam',
+    content:
+      'At age 16, I imagined chasing a beam of light. What would I see? This simple thought experiment became the seed of relativity. I learned that our most powerful instrument is not the telescope or microscope — it is the imagination.',
+    year: 1895,
+    keywords: 'thought experiment, light beam, relativity, imagination, physics',
   },
 ]
 
 const TIMELINE = [
-  { year: 2025, title: 'First sulfide prototype fails at 80°C', description: 'Li6PS5Cl cell loses 40% capacity in 50 cycles — interfacial decomposition. The failure reframes my entire research direction toward interfaces.', type: 'failure' },
-  { year: 2026, title: 'Standardized symmetric-cell screening', description: 'Adopted Li/Li symmetric cycling at 0.5 mA/cm² — evaluation time drops from 3 months to 2 weeks.', type: 'experiment' },
-  { year: 2027, title: 'LiNbO3 interlayer doubles cycle life', description: '4nm coating cuts interfacial resistance 6× and pushes cycle life past 1000. The keystone discovery of my career.', type: 'discovery' },
-  { year: 2028, title: 'Rejected lithium-metal anode for production', description: 'Thermal runaway risk at 60°C outweighs the 15% energy gain. Safety-first decision that defined my reputation.', type: 'decision' },
-  { year: 2029, title: '"A battery that burns is a liability" keynote', description: 'Public commitment to 150°C nail-penetration survival as a publishing gate for the lab.', type: 'publication' },
-  { year: 2030, title: 'Set the 500 Wh/kg × 1000 cycle moonshot', description: 'Defined the lab-defining target metric. Every cell after this is measured against it.', type: 'milestone' },
-  { year: 2031, title: 'Chlorine-tuned argyrodite: 12 mS/cm', description: 'Stoichiometry push reaches liquid-electrolyte conductivity while staying non-flammable. Lab cell clears 1000 cycles.', type: 'discovery' },
-  { year: 2031, title: 'Pilot-line scale-up fails at 60 cycles', description: 'Roll calendaring introduces microcracks. Hard lesson: manufacturing is the science at scale.', type: 'failure' },
-  { year: 2032, title: 'Open-sourced the coating protocol (CC-BY)', description: 'Published the full LiNbO3 recipe rather than patenting it. Traded a patent for field-wide velocity.', type: 'decision' },
-  { year: 2033, title: 'Final notebook: 412 Wh/kg, short of moonshot', description: 'Closed the lab notebook with 412/500 Wh/kg achieved. The gap, and the reasoning behind it, is the real inheritance.', type: 'milestone' },
+  { year: 1879, title: 'Born in Ulm, Germany', description: 'Born to Hermann and Pauline Einstein. My father gave me a compass at age 5 — it sparked my lifelong wonder about invisible forces.', type: 'milestone' },
+  { year: 1895, title: 'Failed ETH Zurich entrance exam', description: 'Failed the exam but passed the math section brilliantly. The rejection taught me to trust my own mind.', type: 'failure' },
+  { year: 1902, title: 'Patent clerk at the Swiss Patent Office', description: 'The "miracle year" incubator. I thought about physics while inspecting patents. The job paid the bills and left my mind free to wander.', type: 'publication' },
+  { year: 1905, title: 'Annus Mirabilis — The Miracle Year', description: 'Four papers that changed physics: photoelectric effect, Brownian motion, special relativity, and E=mc². At 26 years old, I was a patent clerk who rewrote the universe.', type: 'discovery' },
+  { year: 1915, title: 'General Theory of Relativity completed', description: 'The full theory — gravity as warped spacetime. It took 10 years of struggle to generalize special relativity.', type: 'discovery' },
+  { year: 1919, title: 'Solar eclipse confirms relativity', description: 'Arthur Eddington\'s expedition showed starlight bending around the sun. I became a celebrity overnight. The New York Times headline: "Lights All Askew in the Heavens."', type: 'discovery' },
+  { year: 1921, title: 'Nobel Prize in Physics', description: 'Awarded for the photoelectric effect, not relativity (which was still controversial). The committee played it safe.', type: 'publication' },
+  { year: 1926, title: 'Famous quantum debates with Bohr', description: 'The "God does not play dice" confrontation at the Solvay Conference. Bohr and I disagreed fundamentally — and I was wrong.', type: 'milestone' },
+  { year: 1933, title: 'Fled Nazi Germany for the USA', description: 'As a Jewish scientist, I could not stay. The Nazis burned my books. Princeton offered me refuge.', type: 'decision' },
+  { year: 1939, title: 'Signed the Roosevelt letter', description: 'Urged development of the atomic bomb out of fear that Hitler would build it first. It was the decision I most regretted.', type: 'decision' },
+  { year: 1945, title: 'Hiroshima and lifelong pacifism', description: 'After the bomb fell, I dedicated my remaining years to peace. "The atomic bomb has changed everything except our way of thinking."', type: 'milestone' },
+  { year: 1955, title: 'Final days at Princeton', description: 'I died peacefully at age 76, still working on the unified field theory. My final words were in German — lost to the nurse who did not understand them.', type: 'milestone' },
 ]
 
 const GRAPH_NODES = [
-  { label: 'Dr. Aryan Rao', type: 'person' },
-  { label: 'Materials Science & Energy Storage', type: 'field' },
-  { label: 'Solid-State Batteries', type: 'research' },
-  { label: 'Argyrodite Electrolyte', type: 'method' },
-  { label: 'LiNbO3 Interlayer', type: 'discovery' },
-  { label: 'Interface-First Design', type: 'concept' },
-  { label: 'Lithium-Metal Anode', type: 'experiment' },
-  { label: '2025 Thermal Failure', type: 'experiment' },
-  { label: 'Symmetric Cell Screening', type: 'method' },
-  { label: '500 Wh/kg Moonshot', type: 'impact' },
-  { label: 'Pilot-Line Scale-Up', type: 'experiment' },
-  { label: 'Open-Sourced Coating', type: 'decision' },
-  { label: 'Safety-First Doctrine', type: 'principle' },
+  { label: 'Albert Einstein', type: 'person' },
+  { label: 'Physics & Mathematics', type: 'field' },
+  { label: 'Theory of Relativity', type: 'research' },
+  { label: 'Quantum Mechanics', type: 'research' },
+  { label: 'Photoelectric Effect', type: 'discovery' },
+  { label: 'Unified Field Theory', type: 'concept' },
+  { label: 'E=mc²', type: 'discovery' },
+  { label: 'Spacetime', type: 'concept' },
+  { label: 'ETH Zurich', type: 'institution' },
+  { label: 'Swiss Patent Office', type: 'institution' },
+  { label: 'Nobel Prize', type: 'impact' },
+  { label: 'Nuclear Disarmament', type: 'impact' },
+  { label: 'Imagination', type: 'principle' },
 ]
 
 const GRAPH_EDGES = [
-  { source: 'Dr. Aryan Rao', target: 'Materials Science & Energy Storage', relationship: 'part_of' },
-  { source: 'Dr. Aryan Rao', target: 'Solid-State Batteries', relationship: 'used' },
-  { source: 'Solid-State Batteries', target: 'Argyrodite Electrolyte', relationship: 'part_of' },
-  { source: 'Argyrodite Electrolyte', target: '2025 Thermal Failure', relationship: 'caused' },
-  { source: '2025 Thermal Failure', target: 'Interface-First Design', relationship: 'led_to' },
-  { source: 'Interface-First Design', target: 'LiNbO3 Interlayer', relationship: 'led_to' },
-  { source: 'LiNbO3 Interlayer', target: 'Solid-State Batteries', relationship: 'influenced' },
-  { source: 'Dr. Aryan Rao', target: 'Lithium-Metal Anode', relationship: 'rejected' },
-  { source: 'Lithium-Metal Anode', target: 'Safety-First Doctrine', relationship: 'led_to' },
-  { source: 'Symmetric Cell Screening', target: 'Argyrodite Electrolyte', relationship: 'used' },
-  { source: 'Argyrodite Electrolyte', target: '500 Wh/kg Moonshot', relationship: 'influenced' },
-  { source: 'Argyrodite Electrolyte', target: 'Pilot-Line Scale-Up', relationship: 'led_to' },
-  { source: 'Pilot-Line Scale-Up', target: 'Open-Sourced Coating', relationship: 'led_to' },
-  { source: 'LiNbO3 Interlayer', target: 'Open-Sourced Coating', relationship: 'part_of' },
-  { source: 'Safety-First Doctrine', target: 'Dr. Aryan Rao', relationship: 'influenced' },
+  { source: 'Albert Einstein', target: 'Physics & Mathematics', relationship: 'part_of' },
+  { source: 'Albert Einstein', target: 'Theory of Relativity', relationship: 'developed' },
+  { source: 'Theory of Relativity', target: 'Spacetime', relationship: 'introduced' },
+  { source: 'Theory of Relativity', target: 'E=mc²', relationship: 'derived' },
+  { source: 'Albert Einstein', target: 'Quantum Mechanics', relationship: 'contributed_to' },
+  { source: 'Quantum Mechanics', target: 'Photoelectric Effect', relationship: 'explained' },
+  { source: 'Albert Einstein', target: 'Unified Field Theory', relationship: 'pursued' },
+  { source: 'Albert Einstein', target: 'ETH Zurich', relationship: 'attended' },
+  { source: 'Albert Einstein', target: 'Swiss Patent Office', relationship: 'worked_at' },
+  { source: 'Photoelectric Effect', target: 'Nobel Prize', relationship: 'led_to' },
+  { source: 'Albert Einstein', target: 'Nuclear Disarmament', relationship: 'advocated' },
+  { source: 'Albert Einstein', target: 'Imagination', relationship: 'valued' },
+  { source: 'Imagination', target: 'Theory of Relativity', relationship: 'enabled' },
+  { source: 'Nuclear Disarmament', target: 'Albert Einstein', relationship: 'influenced' },
 ]
 
 const THINKING_STYLE = {
-  writingStyle: 'Terse, first-person, engineered — favors concrete numbers (4nm, 12 mS/cm, 1000 cycles) over adjectives.',
-  problemSolving: 'Reduces every problem to its governing interface; designs the failure mode first, then the chemistry.',
-  preferences: 'Prefers symmetric-cell screening over full-cell heroics; will sacrifice energy density for safety without hesitation.',
-  summary: 'A safety-first empiricist who treats failures as primary literature. Believes a material unmanufacturable is a hypothesis, not a product — and that the reasoning behind a rejection matters more than the discovery itself.',
+  writingStyle: 'Reflective, philosophical, humble — uses metaphor and thought experiments to explain complex ideas. Prefers simple language to mathematical formalism in communication.',
+  problemSolving: 'Uses thought experiments (Gedankenexperiment) to visualize problems before deriving equations. Reduces complexity to its essential physical insight.',
+  preferences: 'Prefers elegance and simplicity in equations. Believes a theory should be beautiful. Will sacrifice mathematical rigor for physical intuition when communicating.',
+  summary: 'A humble genius who saw physics as poetry. Believed in the power of imagination and relentless questioning. His legacy: physics was never the same, and neither were we.',
 }
 
 const DEMO_DOCUMENTS = [
   {
-    title: 'Lab Notebook 2025 — Thermal Failure Analysis',
+    title: 'Thought Experiment 1905 — Chasing a Light Beam',
     sourceType: 'note',
     content:
-      'Date: 2025-11-03. Cell LPSCl-04 failed at 80°C after 50 cycles, capacity retention 58%. Post-mortem: XPS shows Li2S formation at the Li/Li6PS5Cl interface — the electrolyte is being reduced by the lithium metal. Bulk conductivity is fine (3.2 mS/cm); the interface is killing us. Why: I optimized for conductivity when I should have optimized for stability. Lesson: interface chemistry, not bulk conductivity, governs real-world life. Next: coat the interface. Idea: thin oxide interlayer (LiNbO3?) to block reduction. Why this over LiF? Oxide is mechanically stiffer, resists dendrite penetration too.',
+      'Date: 1905. What would it look like to ride alongside a beam of light? At age 16, this question consumed me. I imagined: if I could catch up to light, I would see the waves frozen in space. But Maxwell said light always moves at the same speed. Contradiction. Resolution: time itself must slow down, space must contract. This simple curiosity became relativity. The lesson: never dismiss a child\'s question. They might be asking the most important one.',
   },
   {
-    title: 'Keynote 2029 — Safety-First Battery Design',
+    title: 'Letter to Roosevelt, August 2, 1939',
     sourceType: 'note',
     content:
-      'A battery that burns is not a battery, it is a liability. From today, no cell leaves this lab without surviving a 150°C nail-penetration test. I do not care if it is 500 Wh/kg — if it ignites under abuse, it does not ship. The lithium-metal anode we rejected in 2028? Still rejected. The 15% energy gain is not worth a phone that catches fire in a pocket. Safety is not a feature; it is the precondition for existence.',
+      'Dear Mr. President: I am writing to alert you to the possibility that Germany might be developing an atomic bomb. Enrico Fermi and Leo Szilard have urged me to convey this urgency. The element uranium may be turned into a new source of energy in the near future. I do not know if the Germans are working on this. But if they succeed, it would be catastrophic for civilization. I urge you to support research. — With respect, Albert Einstein.',
   },
   {
-    title: 'Final Notebook Entry 2033 — The Gap',
+    title: 'Final Journal Entry, April 1955',
     sourceType: 'note',
     content:
-      'We ended at 412 Wh/kg over 1000 cycles. Short of the 500 moonshot by 88 Wh/kg. Where did the gap live? Not in the electrolyte — we hit 12 mS/cm. Not in the coating — the interlayer held. The gap lived in manufacturing. The pilot line introduced microcracks the lab cell never saw. My final lesson, the one I most want preserved: own the process, not just the material. A material that cannot be manufactured is a hypothesis, not a product. Whoever reads this — spend a season on the production floor before you claim a breakthrough. The reasoning behind the gap is the real inheritance. The papers show 412. The notebook shows why it was not 500.',
+      'I am still working on the unified field theory. The equations are beautiful — but they refuse to match nature. Perhaps my greatest lesson: nature does not owe us agreement. We owe nature our attention. I spent my life trying to read the mind of God. Now I see: God is not a mathematician. God is the mystery itself. And mystery — not answers — is what I will miss most.',
   },
 ]
 
@@ -195,7 +196,8 @@ export async function POST(req: Request) {
   if (!ownerId) {
     return Response.json({ error: 'Sign in to load the demo' }, { status: 401 })
   }
-  // idempotent per-user: remove any prior Dr. Aryan Rao profile owned by this user
+  
+  // Idempotent per-user: remove any prior Einstein profile owned by this user
   const existing = await db.profile.findFirst({
     where: { name: PROFILE.name, ownerId },
     select: { id: true },
