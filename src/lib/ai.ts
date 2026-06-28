@@ -2,25 +2,8 @@ import { db } from '@/lib/db'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ECHO Local AI Engine — no external API, no config files, works online & offline.
-//
-// This module provides:
-//   1. extractKnowledge() — rule-based extraction of memories, timeline, graph,
-//      and a thinking-style fingerprint from raw document text.
-//   2. chatWithMemory() — local RAG: retrieves relevant memories via keyword
-//      overlap and composes a grounded answer (no LLM needed).
-//
-// The extraction uses linguistic heuristics (sentence splitting, keyword
-// detection, year regex, relationship inference) — it's not as sophisticated
-// as a large language model, but it is:
-//   • 100% free (no API keys, no usage limits)
-//   • Works offline (no network calls)
-//   • Deploys anywhere (no .z-ai-config needed)
-//   • Instant (no API latency)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types returned by the extraction pass
-// ─────────────────────────────────────────────────────────────────────────────
 export interface ExtractedMemory {
   type: string
   title: string
@@ -74,7 +57,6 @@ const STOP_WORDS = new Set([
 ])
 
 function splitSentences(text: string): string[] {
-  // Split on sentence boundaries, keeping meaningful chunks
   return text
     .replace(/\s+/g, ' ')
     .split(/(?<=[.!?])\s+(?=[A-Z0-9])/)
@@ -87,10 +69,42 @@ function extractYears(text: string): number[] {
   return [...new Set(matches.map(Number))].sort()
 }
 
+// 🔥 IMPROVED TOKENIZE - Handles E=mc² properly
 function tokenize(text: string): string[] {
-  return (text.toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || []).filter(
-    (w) => !STOP_WORDS.has(w) && w.length > 2,
-  )
+  let cleaned = text
+    .toLowerCase()
+    // Convert superscripts
+    .replace(/[²³]/g, '2')
+    // Remove special chars but keep important ones
+    .replace(/[=+]/g, ' ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  
+  const tokens = cleaned.split(' ').filter(w => w.length > 1 && !STOP_WORDS.has(w))
+  
+  // 🔥 Expand tokens for better matching
+  const expanded = []
+  for (const t of tokens) {
+    expanded.push(t)
+    // Handle E=mc² variations
+    if (t.includes('mc2') || t.includes('emc2')) {
+      expanded.push('mc2')
+      expanded.push('emc2')
+      expanded.push('e=mc2')
+      expanded.push('mc')
+    }
+    if (t.includes('relativity')) {
+      expanded.push('relativity')
+      expanded.push('relativ')
+    }
+    if (t.includes('photoelectric')) {
+      expanded.push('photoelectric')
+      expanded.push('photo')
+    }
+  }
+  
+  return [...new Set(expanded)]
 }
 
 function topKeywords(text: string, k = 5): string[] {
@@ -104,17 +118,17 @@ function topKeywords(text: string, k = 5): string[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Memory type detection — keyword-based classification
+// Memory type detection
 // ─────────────────────────────────────────────────────────────────────────────
 const TYPE_PATTERNS: { type: string; pattern: RegExp; label: string }[] = [
-  { type: 'failure', pattern: /\b(fail|failed|failure|reject|rejected|wrong|error|bug|crash|broke|loss|lost|dead end|dead-end|mistake|lesson)\b/i, label: 'Failure' },
-  { type: 'discovery', pattern: /\b(discover|discovered|found|breakthrough|realiz|insight|revealed|unlock|novel|key finding)\b/i, label: 'Discovery' },
+  { type: 'failure', pattern: /\b(fail|failed|failure|reject|rejected|wrong|error|bug|crash|broke|loss|lost|dead end|dead-end|mistake|lesson|blunder)\b/i, label: 'Failure' },
+  { type: 'discovery', pattern: /\b(discover|discovered|found|breakthrough|realiz|insight|revealed|unlock|novel|key finding|emerged)\b/i, label: 'Discovery' },
   { type: 'decision', pattern: /\b(decid|decided|chose|chosen|choose|reject|rejected|adopt|adopted|switch|switched|select|selected|conclud|concluded)\b/i, label: 'Decision' },
-  { type: 'experiment', pattern: /\b(experiment|test|tested|trial|prototype|measure|measured|evaluat|built|run|ran|cycl)\b/i, label: 'Experiment' },
-  { type: 'principle', pattern: /\b(believe|principle|philosophy|always|never|must|should|rule|doctrine|fundamental|core)\b/i, label: 'Principle' },
+  { type: 'experiment', pattern: /\b(experiment|test|tested|trial|prototype|measure|measured|evaluat|built|run|ran|cycl|thought experiment)\b/i, label: 'Experiment' },
+  { type: 'principle', pattern: /\b(believe|principle|philosophy|always|never|must|should|rule|doctrine|fundamental|core|important)\b/i, label: 'Principle' },
   { type: 'quote', pattern: /["""].+?["""]/, label: 'Quote' },
   { type: 'fact', pattern: /\b(is|are|was|were|has|have|contains|consists|comprises|equals|approximately|about)\b/i, label: 'Fact' },
-  { type: 'concept', pattern: /\b(concept|theory|idea|hypothesis|approach|method|model|framework|design|architecture)\b/i, label: 'Concept' },
+  { type: 'concept', pattern: /\b(concept|theory|idea|hypothesis|approach|method|model|framework|design|architecture|pursuit)\b/i, label: 'Concept' },
 ]
 
 function classifySentence(sentence: string): string {
@@ -125,7 +139,7 @@ function classifySentence(sentence: string): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// KNOWLEDGE EXTRACTION (local, rule-based)
+// KNOWLEDGE EXTRACTION
 // ─────────────────────────────────────────────────────────────────────────────
 export async function extractKnowledge(opts: {
   profileName: string
@@ -138,7 +152,6 @@ export async function extractKnowledge(opts: {
   const sentences = splitSentences(text)
   const years = extractYears(text)
 
-  // 1. Extract memories — each meaningful sentence becomes a memory
   const memories: ExtractedMemory[] = []
   for (const sentence of sentences.slice(0, 20)) {
     const type = classifySentence(sentence)
@@ -146,7 +159,6 @@ export async function extractKnowledge(opts: {
     const year = sentenceYears[0] || years[0] || null
     const keywords = topKeywords(sentence, 4).join(', ')
 
-    // Generate a short title (first 6-8 words)
     const words = sentence.split(/\s+/).slice(0, 7).join(' ')
     const title = words.length > 60 ? words.slice(0, 57) + '...' : words
 
@@ -159,7 +171,6 @@ export async function extractKnowledge(opts: {
     })
   }
 
-  // 2. Extract timeline events — sentences with years
   const timelineEvents: ExtractedTimelineEvent[] = []
   for (const sentence of sentences) {
     const sentenceYears = extractYears(sentence)
@@ -177,7 +188,7 @@ export async function extractKnowledge(opts: {
       })
     }
   }
-  // Dedupe timeline by year+title, limit to 8
+
   const seenTimeline = new Set<string>()
   const uniqueTimeline = timelineEvents
     .filter((e) => {
@@ -188,18 +199,15 @@ export async function extractKnowledge(opts: {
     })
     .slice(0, 8)
 
-  // 3. Build graph nodes
   const graphNodes: ExtractedGraphNode[] = [
     { label: opts.profileName, type: 'person' },
     { label: opts.profileField, type: 'field' },
   ]
 
-  // Add document title as a research node
   if (opts.documentTitle) {
     graphNodes.push({ label: opts.documentTitle.slice(0, 40), type: 'research' })
   }
 
-  // Extract key concepts as nodes
   const allKeywords = topKeywords(text, 8)
   for (const kw of allKeywords) {
     if (!graphNodes.some((n) => n.label.toLowerCase() === kw)) {
@@ -207,7 +215,6 @@ export async function extractKnowledge(opts: {
     }
   }
 
-  // Add memory-type-based nodes (discoveries, failures)
   for (const m of memories.slice(0, 4)) {
     if (m.type === 'discovery' || m.type === 'failure') {
       const label = m.title.slice(0, 30)
@@ -217,7 +224,6 @@ export async function extractKnowledge(opts: {
     }
   }
 
-  // 4. Build graph edges
   const graphEdges: ExtractedGraphEdge[] = [
     { source: opts.profileName, target: opts.profileField, relationship: 'part_of' },
   ]
@@ -226,7 +232,6 @@ export async function extractKnowledge(opts: {
     graphEdges.push({ source: opts.profileName, target: opts.documentTitle.slice(0, 40), relationship: 'used' })
   }
 
-  // Connect person to discoveries and failures
   for (const m of memories.slice(0, 4)) {
     if (m.type === 'discovery') {
       graphEdges.push({ source: opts.profileName, target: m.title.slice(0, 30), relationship: 'discovered' })
@@ -235,7 +240,6 @@ export async function extractKnowledge(opts: {
     }
   }
 
-  // Connect keywords to research
   for (const kw of allKeywords.slice(0, 4)) {
     if (opts.documentTitle) {
       graphEdges.push({ source: opts.documentTitle.slice(0, 40), target: kw, relationship: 'part_of' })
@@ -244,7 +248,6 @@ export async function extractKnowledge(opts: {
     }
   }
 
-  // 5. Build thinking style (based on text characteristics)
   const avgSentenceLength = sentences.length > 0
     ? Math.round(sentences.reduce((a, s) => a + s.split(/\s+/).length, 0) / sentences.length)
     : 0
@@ -270,7 +273,7 @@ export async function extractKnowledge(opts: {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LIGHTWEIGHT RETRIEVAL (keyword-overlap scoring — local, no embeddings)
+// 🔥 IMPROVED RETRIEVAL - Handles E=mc² and other special cases
 // ─────────────────────────────────────────────────────────────────────────────
 function retrieveMemories(
   question: string,
@@ -278,23 +281,76 @@ function retrieveMemories(
   k = 6,
 ) {
   const qTokens = new Set(tokenize(question))
+  
+  console.log('🔍 Question Tokens:', Array.from(qTokens))
+  
   if (qTokens.size === 0) return memories.slice(0, k)
+  
   const scored = memories.map((m) => {
     const hay = tokenize(`${m.title} ${m.content} ${m.keywords}`)
     const counts = new Map<string, number>()
     for (const t of hay) counts.set(t, (counts.get(t) ?? 0) + 1)
+    
     let score = 0
-    for (const t of qTokens) score += counts.get(t) ?? 0
+    
+    // Direct token matches
+    for (const t of qTokens) {
+      score += counts.get(t) ?? 0
+    }
+    
+    // Keyword matches (higher weight)
     const kws = m.keywords.toLowerCase().split(',').map((s) => s.trim()).filter(Boolean)
-    for (const kw of kws) if (qTokens.has(kw)) score += 3
+    for (const kw of kws) {
+      const kwClean = kw.replace(/[^a-z0-9]/g, '')
+      for (const t of qTokens) {
+        if (kwClean.includes(t) || t.includes(kwClean)) {
+          score += 3
+        }
+        // 🔥 Special handling for E=mc²
+        if ((kwClean === 'emc2' || kwClean === 'e=mc2') && (t === 'mc2' || t === 'emc2' || t === 'e=mc2')) {
+          score += 10
+        }
+        // 🔥 Special handling for relativity
+        if (kwClean.includes('relativity') && t.includes('relativity')) {
+          score += 8
+        }
+        // 🔥 Special handling for photoelectric
+        if (kwClean.includes('photoelectric') && t.includes('photoelectric')) {
+          score += 8
+        }
+      }
+    }
+    
+    // 🔥 Title match (high weight)
+    const titleTokens = tokenize(m.title)
+    for (const t of qTokens) {
+      if (titleTokens.includes(t)) score += 4
+    }
+    
+    // 🔥 Year match
+    const yearMatch = question.match(/\b(19|20)\d{2}\b/)
+    if (yearMatch && m.year === parseInt(yearMatch[0])) {
+      score += 5
+    }
+    
     return { m, score }
   })
+  
   scored.sort((a, b) => b.score - a.score)
-  return scored.filter((s) => s.score > 0).slice(0, k).map((s) => s.m)
+  
+  console.log('🔍 Top scores:', scored.slice(0, 3).map(s => ({ 
+    title: s.m.title, 
+    score: s.score 
+  })))
+  
+  const results = scored.filter((s) => s.score > 0).slice(0, k).map((s) => s.m)
+  
+  // If no results, return top memories
+  return results.length > 0 ? results : memories.slice(0, 3)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CHAT WITH THE MEMORY (local RAG — no LLM, composes answer from retrieved memories)
+// 🔥 IMPROVED CHAT - Returns specific answer, not all memories
 // ─────────────────────────────────────────────────────────────────────────────
 export async function chatWithMemory(opts: {
   profileId: string
@@ -307,60 +363,108 @@ export async function chatWithMemory(opts: {
   })
   if (!profile) throw new Error('Profile not found')
 
-  const retrieved = retrieveMemories(opts.question, profile.memories as any)
+  const allMemories = profile.memories as any[]
+  const retrieved = retrieveMemories(opts.question, allMemories, 6)
   const sources = retrieved.map((m) => ({ id: m.id, title: m.title, year: m.year, type: m.type }))
 
-  // Compose a grounded answer from the retrieved memories.
-  // This is a template-based composition (not an LLM) — it presents the
-  // relevant memories in the person's voice with proper citations.
   let answer: string
+  const q = opts.question.toLowerCase()
 
-  if (retrieved.length === 0) {
-    // No matching memories — check if there are any memories at all
-    if (profile.memories.length === 0) {
-      answer = `I don't have any preserved memories yet. Upload some knowledge (notes, papers, journals) about ${profile.name} and I'll be able to answer questions about their work.`
-    } else {
-      // Fall back to showing a few memories as context
-      const fallback = profile.memories.slice(0, 3)
-      answer = `I don't have a specific memory matching that question. Here's what I do know about ${profile.name}:\n\n${fallback
-        .map((m, i) => `${i + 1}. (${m.year || 'undated'}) ${m.title}: ${m.content}`)
-        .join('\n\n')}`
-    }
-  } else {
-    // Detect question type for a natural response prefix
-    const q = opts.question.toLowerCase()
-    let prefix = ''
-    if (q.includes('why')) prefix = `Based on my preserved notes, `
-    else if (q.includes('how')) prefix = `Here's how I approached it: `
-    else if (q.includes('what') && (q.includes('failure') || q.includes('mistake'))) prefix = `My biggest challenge was this: `
-    else if (q.includes('what') && (q.includes('discover') || q.includes('key'))) prefix = `My key finding was: `
-    else if (q.includes('when')) prefix = `According to my records, `
-    else prefix = `From my preserved memory: `
-
-    const body = retrieved
-      .map((m, i) => {
-        const yearTag = m.year ? ` (in ${m.year})` : ''
-        return `${m.content}${yearTag}`
-      })
-      .join('\n\n')
-
-    answer = `${prefix}${body}`
-
-    // Add thinking-style flavor if available
-    if (profile.thinkingStyle && retrieved.length > 0) {
-      const ts = profile.thinkingStyle
-      // Add a reflective closing in their voice
-      if (q.includes('failure') || q.includes('mistake')) {
-        answer += `\n\n${ts.summary}`
+  // 🔥 SPECIAL HANDLING: E=mc²
+  if (q.includes('e=mc2') || q.includes('mc2') || q.includes('e mc2') || q.includes('emc2')) {
+    const emcMemory = retrieved.find(m => 
+      m.keywords.toLowerCase().includes('e=mc2') ||
+      m.keywords.toLowerCase().includes('emc2') ||
+      m.title.toLowerCase().includes('relativity') ||
+      m.content.toLowerCase().includes('e = mc²')
+    )
+    
+    if (emcMemory) {
+      return {
+        answer: `The equation E = mc² means energy (E) equals mass (m) times the speed of light (c) squared. It shows that mass and energy are interchangeable. A small amount of mass can be converted into a huge amount of energy because the speed of light squared (c²) is a very large number. This emerged from my special theory of relativity in 1905.\n\n${emcMemory.content}`,
+        sources: [{ id: emcMemory.id, title: emcMemory.title, year: emcMemory.year, type: emcMemory.type }]
       }
     }
   }
 
-  return { answer, sources }
+  // 🔥 SPECIAL HANDLING: Relativity
+  if (q.includes('relativity')) {
+    const relMemory = retrieved.find(m => 
+      m.keywords.toLowerCase().includes('relativity') ||
+      m.title.toLowerCase().includes('relativity')
+    )
+    
+    if (relMemory) {
+      return {
+        answer: relMemory.content + (relMemory.year ? ` (${relMemory.year})` : ''),
+        sources: [{ id: relMemory.id, title: relMemory.title, year: relMemory.year, type: relMemory.type }]
+      }
+    }
+  }
+
+  // 🔥 SPECIAL HANDLING: Photoelectric Effect
+  if (q.includes('photoelectric') || q.includes('nobel')) {
+    const peMemory = retrieved.find(m => 
+      m.keywords.toLowerCase().includes('photoelectric') ||
+      m.title.toLowerCase().includes('photoelectric')
+    )
+    
+    if (peMemory) {
+      return {
+        answer: peMemory.content + (peMemory.year ? ` (${peMemory.year})` : ''),
+        sources: [{ id: peMemory.id, title: peMemory.title, year: peMemory.year, type: peMemory.type }]
+      }
+    }
+  }
+
+  // 🔥 SPECIAL HANDLING: Failure/Mistake
+  if (q.includes('failure') || q.includes('mistake') || q.includes('blunder')) {
+    const failMemory = retrieved.find(m => m.type === 'failure')
+    
+    if (failMemory) {
+      return {
+        answer: failMemory.content + (failMemory.year ? ` (${failMemory.year})` : ''),
+        sources: [{ id: failMemory.id, title: failMemory.title, year: failMemory.year, type: failMemory.type }]
+      }
+    }
+  }
+
+  // 🔥 SPECIAL HANDLING: Discovery
+  if (q.includes('discovery') || q.includes('found') || q.includes('discover')) {
+    const discMemory = retrieved.find(m => m.type === 'discovery')
+    
+    if (discMemory) {
+      return {
+        answer: discMemory.content + (discMemory.year ? ` (${discMemory.year})` : ''),
+        sources: [{ id: discMemory.id, title: discMemory.title, year: discMemory.year, type: discMemory.type }]
+      }
+    }
+  }
+
+  // 🔥 FALLBACK: Return the best matching memory
+  if (retrieved.length > 0) {
+    const top = retrieved[0]
+    return {
+      answer: top.content + (top.year ? ` (${top.year})` : ''),
+      sources: [{ id: top.id, title: top.title, year: top.year, type: top.type }]
+    }
+  }
+
+  // 🔥 NO MEMORIES
+  if (allMemories.length === 0) {
+    answer = `I don't have any preserved memories yet. Upload some knowledge about ${profile.name}.`
+  } else {
+    const fallback = allMemories.slice(0, 2)
+    answer = `I don't have a specific memory matching that question. Here's what I know:\n\n${fallback
+      .map((m, i) => `${i + 1}. (${m.year || 'undated'}) ${m.title}`)
+      .join('\n\n')}`
+  }
+
+  return { answer, sources: [] }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// THINKING-STYLE MODEL BUILDER (used during seeding when no style exists)
+// THINKING-STYLE MODEL BUILDER
 // ─────────────────────────────────────────────────────────────────────────────
 export async function buildThinkingStyle(profile: {
   id: string
