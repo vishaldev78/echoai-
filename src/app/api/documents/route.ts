@@ -65,11 +65,7 @@ export async function POST(req: NextRequest) {
       document,
       extraction: null,
       counts: { memories: 0, timeline: 0, nodes: 0, edges: 0 },
-      warning:
-        'Document saved, but AI extraction failed — ' +
-        (message.includes('z-ai-config')
-          ? 'the z-ai SDK is not configured. Create a .z-ai-config file in the project root.'
-          : message),
+      warning: 'Document saved, but extraction failed: ' + message,
     })
   }
 }

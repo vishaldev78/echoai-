@@ -55,14 +55,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ conversationId: conv.id, answer, sources })
   } catch (err) {
-    // AI unavailable (e.g. z-ai SDK not configured locally). Return a graceful
-    // message instead of crashing, and persist it so the conversation history
-    // stays consistent.
+    // Local AI should rarely fail, but if it does, return a graceful message
+    // and persist it so the conversation history stays consistent.
     const message = err instanceof Error ? err.message : 'AI unavailable'
-    const fallback =
-      message.includes('z-ai-config')
-        ? `I'm unable to connect to the AI service right now. To enable chat locally, create a .z-ai-config file in the project root with your z.ai credentials. Your question has been saved.`
-        : `I couldn't generate a response right now (${message}). Your question has been saved — please try again later.`
+    const fallback = `I couldn't generate a response right now (${message}). Your question has been saved — please try again later.`
 
     await db.message.create({
       data: { conversationId: conv.id, role: 'assistant', content: fallback, sources: '' },

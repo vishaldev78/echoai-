@@ -19,38 +19,25 @@ npm install
 This also auto-generates the Prisma client (via the `postinstall` hook).
 
 ### 2. Set up the database
-The app uses **Neon PostgreSQL** (serverless Postgres). The connection string is already in `.env`:
+The app uses **Neon PostgreSQL** (serverless Postgres). Create a `.env` file in the project root:
+```bash
+# .env
+DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
 ```
-DATABASE_URL="postgresql://neondb_owner:npg_8myzUEKTGM6x@ep-misty-meadow-ahg28g5g-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-```
-Push the schema to create all tables:
+Then push the schema to create all tables:
 ```bash
 npm run db:push
 ```
 
-> **Want your own database?** Create a free Neon project at [neon.tech](https://neon.tech), copy its connection string into `.env`, then run `npm run db:push`.
+> **Free database:** Create a free Neon project at [neon.tech](https://neon.tech), copy its connection string into `.env`.
 
-### 3. Set up the AI (z-ai SDK)
-The app uses the **z-ai-web-dev-sdk** for knowledge extraction and RAG chat. It needs a `.z-ai-config` file in the project root. A working config file is **already included** in this project (`.z-ai-config`).
-
-If it's missing or you need your own credentials, create `.z-ai-config` in the project root:
-```json
-{
-  "baseUrl": "https://internal-api.z.ai/v1",
-  "apiKey": "Z.ai",
-  "chatId": "your-chat-id",
-  "token": "your-jwt-token",
-  "userId": "your-user-id"
-}
-```
-
-> **Note:** The `.z-ai-config` file is in `.gitignore` (it contains auth tokens). If the AI features aren't working locally, check that this file exists — without it, document uploads will still save but won't extract memories, and chat will return a graceful "AI unavailable" message instead of crashing.
-
-### 4. Start the dev server
+### 3. Start the dev server
 ```bash
 npm run dev
 ```
 Open **http://localhost:3000** in your browser.
+
+> **No API keys needed!** The AI engine (knowledge extraction + RAG chat) runs entirely locally — no external API calls, no config files, no usage limits. It works online and offline.
 
 ---
 
@@ -93,7 +80,7 @@ Open **http://localhost:3000** in your browser.
 - **Next.js 16** (App Router) + **TypeScript**
 - **Tailwind CSS 4** + **shadcn/ui** components
 - **Prisma ORM** + **Neon PostgreSQL**
-- **z-ai-web-dev-sdk** (LLM for extraction + RAG chat)
+- **Local AI engine** (rule-based knowledge extraction + keyword RAG chat — no external API, works offline)
 - **pdfjs-dist** (client-side PDF text extraction)
 - **Framer Motion** (animations)
 - **Zustand** (client state)
