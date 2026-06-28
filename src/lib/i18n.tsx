@@ -24,7 +24,7 @@ const en = {
   'landing.title1': 'Preserving human intelligence',
   'landing.title2': 'beyond human lifespan.',
   'landing.subtitle': 'When a great scientist dies, their reasoning disappears with them — the papers survive, but the why does not. ECHO distills a person\u2019s writings, notes and failures into a living knowledge graph you can converse with, forever.',
-  'landing.cta.demo': "Explore Dr. Aryan's Memory",
+  'landing.cta.demo': "Explore Albert Einstein Memory",
   'landing.cta.demoLoading': 'Awakening\u2026',
   'landing.cta.preserve': 'Preserve a Memory',
   'landing.signup': 'No signup. Try the live demo of a solid-state battery scientist\u2019s preserved mind.',
