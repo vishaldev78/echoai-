@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "DATABASE_URL=$(grep DATABASE_URL .env | cut -d'\"' -f2) next dev",
+    "dev": "next dev",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/ && cp .env .next/standalone/.env",
     "start": "NODE_ENV=production node .next/standalone/server.js",
     "lint": "eslint .",

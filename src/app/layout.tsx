@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   keywords: ["ECHO", "digital memory", "AI", "knowledge graph", "RAG", "legacy", "intelligence"],
   authors: [{ name: "ECHO AI" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "https://i.postimg.cc/XJBVNnYc/echoai.jpg",
   },
   openGraph: {
     title: "ECHO AI — A Digital Memory Layer for Humanity",
